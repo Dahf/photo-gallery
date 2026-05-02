@@ -49,6 +49,10 @@ RUN npm install --omit=optional --no-save \
       drizzle-orm@0.45.2 \
       postgres@3.4.9 \
       bcryptjs@3.0.3 \
+      tsx@4.21.0 \
+    # Replace whatever sharp variant the standalone trace shipped with the
+    # linuxmusl-x64 native binary so it actually loads in this Alpine runtime.
+    && npm install --no-save --include=optional --os=linux --libc=musl --cpu=x64 sharp@0.34.5 \
     && chown -R nextjs:nodejs /app/node_modules
 
 USER nextjs
