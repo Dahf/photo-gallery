@@ -2,9 +2,10 @@ import { type NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { galleries, photos } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
-import { hasGalleryAccess } from '@/lib/gallery-auth';
+import { hasGalleryAccess, getOrSetClientSession } from '@/lib/gallery-auth';
 import { auth } from '@/lib/auth';
 import { buckets, getObjectStream } from '@/lib/s3';
+import { recordEvent } from '@/lib/analytics';
 
 export const runtime = 'nodejs';
 
@@ -56,6 +57,12 @@ export async function GET(
   const key = variant === 'web' ? photo.web : photo.thumb;
   const body = await getObjectStream(buckets.photos, key);
   if (!body) return new Response('Not found', { status: 404 });
+
+  // Track lightbox views — thumbnails are noisy and would inflate counts.
+  if (variant === 'web') {
+    const sessionId = await getOrSetClientSession();
+    void recordEvent({ galleryId: gallery.id, photoId, eventType: 'view', sessionId });
+  }
 
   return new Response(body as unknown as ReadableStream, {
     headers: {

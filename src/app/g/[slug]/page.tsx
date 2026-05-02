@@ -4,6 +4,7 @@ import { and, asc, eq, inArray } from 'drizzle-orm';
 import { notFound, redirect } from 'next/navigation';
 import { hasGalleryAccess, readClientSession } from '@/lib/gallery-auth';
 import { photoUrl } from '@/lib/s3';
+import { recordGalleryOpen } from '@/lib/analytics';
 import { GalleryView } from './gallery-view';
 
 export default async function PublicGalleryPage({
@@ -50,6 +51,8 @@ export default async function PublicGalleryPage({
   // the first favourite POST (Route Handler). Until then, we just have no
   // pre-marked favourites for this visitor — which is correct.
   const sessionId = await readClientSession();
+  void recordGalleryOpen(gallery.id, sessionId);
+
   const favRows = sessionId && photoList.length
     ? await db
         .select({ photoId: favorites.photoId })

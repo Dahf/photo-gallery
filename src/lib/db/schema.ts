@@ -86,6 +86,25 @@ export const favorites = pgTable(
   ]
 );
 
+export const galleryEvents = pgTable(
+  'gallery_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    galleryId: uuid('gallery_id')
+      .notNull()
+      .references(() => galleries.id, { onDelete: 'cascade' }),
+    photoId: uuid('photo_id').references(() => photos.id, { onDelete: 'cascade' }),
+    eventType: text('event_type').notNull(),
+    sessionId: text('session_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index('events_gallery_type_time_idx').on(t.galleryId, t.eventType, t.createdAt),
+    index('events_gallery_photo_idx').on(t.galleryId, t.photoId, t.eventType),
+    index('events_gallery_session_idx').on(t.galleryId, t.sessionId),
+  ]
+);
+
 export const customDomains = pgTable('custom_domains', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
@@ -104,6 +123,12 @@ export const galleriesRelations = relations(galleries, ({ one, many }) => ({
   user: one(users, { fields: [galleries.userId], references: [users.id] }),
   photos: many(photos),
   favorites: many(favorites),
+  events: many(galleryEvents),
+}));
+
+export const galleryEventsRelations = relations(galleryEvents, ({ one }) => ({
+  gallery: one(galleries, { fields: [galleryEvents.galleryId], references: [galleries.id] }),
+  photo: one(photos, { fields: [galleryEvents.photoId], references: [photos.id] }),
 }));
 
 export const photosRelations = relations(photos, ({ one, many }) => ({
@@ -123,3 +148,5 @@ export type NewGallery = typeof galleries.$inferInsert;
 export type Photo = typeof photos.$inferSelect;
 export type NewPhoto = typeof photos.$inferInsert;
 export type Favorite = typeof favorites.$inferSelect;
+export type GalleryEvent = typeof galleryEvents.$inferSelect;
+export type NewGalleryEvent = typeof galleryEvents.$inferInsert;

@@ -57,6 +57,9 @@ export default async function GalleryAdminPage({
             galleryTitle={gallery.title}
             photoCount={photoList.length}
           />
+          <Link href={`/dashboard/galleries/${gallery.id}/stats`} className="btn-ghost">
+            Stats
+          </Link>
           <Link href={`/dashboard/galleries/${gallery.id}/favorites`} className="btn-ghost">
             Favourites
           </Link>

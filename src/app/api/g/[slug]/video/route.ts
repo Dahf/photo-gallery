@@ -2,9 +2,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { galleries } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
-import { hasGalleryAccess } from '@/lib/gallery-auth';
+import { hasGalleryAccess, getOrSetClientSession } from '@/lib/gallery-auth';
 import { auth } from '@/lib/auth';
 import { buckets, getRangedObject, deleteObject } from '@/lib/s3';
+import { recordEvent } from '@/lib/analytics';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -39,6 +40,13 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   if (!allowed) return new Response('Forbidden', { status: 403 });
 
   const range = req.headers.get('range') ?? undefined;
+
+  // Track only the initial open (no Range, or Range starts at byte 0). Subsequent
+  // seeks emit further Range requests we want to ignore.
+  if (!range || /^bytes=0-/.test(range)) {
+    const sessionId = await getOrSetClientSession();
+    void recordEvent({ galleryId: gallery.id, eventType: 'hero_play', sessionId });
+  }
 
   const res = await getRangedObject(buckets.originals, gallery.heroVideoKey, range);
 

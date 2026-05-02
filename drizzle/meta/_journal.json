@@ -15,6 +15,13 @@
       "when": 1777737124016,
       "tag": "0001_mute_scarecrow",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777742842886,
+      "tag": "0002_handy_bloodstrike",
+      "breakpoints": true
     }
   ]
 }

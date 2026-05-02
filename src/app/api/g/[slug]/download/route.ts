@@ -2,8 +2,9 @@ import { type NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { galleries, photos } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { hasGalleryAccess } from '@/lib/gallery-auth';
+import { hasGalleryAccess, getOrSetClientSession } from '@/lib/gallery-auth';
 import { buckets, getObjectStream } from '@/lib/s3';
+import { recordEvent } from '@/lib/analytics';
 import archiver from 'archiver';
 import { Readable } from 'node:stream';
 
@@ -36,6 +37,9 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: stri
     .where(eq(photos.galleryId, gallery.id));
 
   if (list.length === 0) return new Response('Empty gallery', { status: 404 });
+
+  const sessionId = await getOrSetClientSession();
+  void recordEvent({ galleryId: gallery.id, eventType: 'download_zip', sessionId });
 
   const archive = archiver('zip', { zlib: { level: 0 } }); // Photos are already compressed
   const seenNames = new Set<string>();

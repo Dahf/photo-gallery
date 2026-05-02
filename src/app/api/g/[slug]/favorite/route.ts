@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { galleries, photos, favorites } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { hasGalleryAccess, getOrSetClientSession } from '@/lib/gallery-auth';
+import { recordEvent } from '@/lib/analytics';
 
 async function loadGallery(slug: string) {
   const [g] = await db
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
     .insert(favorites)
     .values({ galleryId: auth.gallery.id, photoId, clientSessionId: sessionId })
     .onConflictDoNothing();
+  void recordEvent({ galleryId: auth.gallery.id, photoId, eventType: 'favorite_add', sessionId });
   return NextResponse.json({ ok: true });
 }
 
@@ -58,5 +60,6 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ slug: st
   await db
     .delete(favorites)
     .where(and(eq(favorites.photoId, photoId), eq(favorites.clientSessionId, sessionId)));
+  void recordEvent({ galleryId: auth.gallery.id, photoId, eventType: 'favorite_remove', sessionId });
   return NextResponse.json({ ok: true });
 }
