@@ -4,7 +4,9 @@
       "Bash(npm view *)",
       "Bash(rm c:/Users/silas/projects/photo-gallery/src/app/api/g/\\\\[slug\\\\]/video/presign/route.ts c:/Users/silas/projects/photo-gallery/src/app/api/g/\\\\[slug\\\\]/video/complete/route.ts)",
       "Bash(rmdir c:/Users/silas/projects/photo-gallery/src/app/api/g/\\\\[slug\\\\]/video/presign c:/Users/silas/projects/photo-gallery/src/app/api/g/\\\\[slug\\\\]/video/complete)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(curl -sS -o /dev/null -w \"%{http_code}\" http://localhost:3000/dashboard)",
+      "Bash(pkill -f \"next dev\")"
     ]
   }
 }

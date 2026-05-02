@@ -153,6 +153,14 @@ export async function getGalleryStats(galleryId: string): Promise<{
   }
 
   // Top photos — engagement = views×1 + downloads×3 + favorite_add×5.
+  // Postgres doesn't see SELECT aliases inside ORDER BY when Drizzle generates
+  // positional sql expressions, so we repeat the engagement formula in ORDER BY.
+  const engagementExpr = sql`(
+    count(*) filter (where ${galleryEvents.eventType} = 'view')
+    + count(*) filter (where ${galleryEvents.eventType} = 'download') * 3
+    + count(*) filter (where ${galleryEvents.eventType} = 'favorite_add') * 5
+  )`;
+
   const topRows = await db
     .select({
       photoId: photos.id,
@@ -160,17 +168,13 @@ export async function getGalleryStats(galleryId: string): Promise<{
       views: sql<number>`count(*) filter (where ${galleryEvents.eventType} = 'view')::int`,
       downloads: sql<number>`count(*) filter (where ${galleryEvents.eventType} = 'download')::int`,
       favorites: sql<number>`count(*) filter (where ${galleryEvents.eventType} = 'favorite_add')::int`,
-      engagement: sql<number>`(
-        count(*) filter (where ${galleryEvents.eventType} = 'view')
-        + count(*) filter (where ${galleryEvents.eventType} = 'download') * 3
-        + count(*) filter (where ${galleryEvents.eventType} = 'favorite_add') * 5
-      )::int`,
+      engagement: sql<number>`${engagementExpr}::int`,
     })
     .from(galleryEvents)
     .innerJoin(photos, eq(photos.id, galleryEvents.photoId))
     .where(eq(galleryEvents.galleryId, galleryId))
     .groupBy(photos.id, photos.filename)
-    .orderBy(sql`engagement desc`)
+    .orderBy(sql`${engagementExpr} desc`)
     .limit(50);
 
   return { kpis, daily, topPhotos: topRows };
