@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { UploadZone } from './upload-zone';
 import { PhotoGrid } from './photo-grid';
 import { DeleteGalleryButton } from './delete-gallery-button';
+import { HeroVideoUpload } from './hero-video';
 import { env } from '@/lib/env';
 
 export default async function GalleryAdminPage({
@@ -72,6 +73,8 @@ export default async function GalleryAdminPage({
         <code className="mt-2 block break-all text-sm text-text">{shareUrl}</code>
       </div>
 
+      <HeroVideoUpload gallerySlug={gallery.slug} hasVideo={!!gallery.heroVideoKey} />
+
       <UploadZone galleryId={gallery.id} />
 
       {photoList.length === 0 ? (
@@ -80,8 +83,8 @@ export default async function GalleryAdminPage({
         </div>
       ) : (
         <PhotoGrid
-          photos={photoList.map((p) => ({ id: p.id, filename: p.filename, s3KeyThumb: p.s3KeyThumb }))}
-          photosBaseUrl={env.PHOTOS_PUBLIC_BASE_URL}
+          photos={photoList.map((p) => ({ id: p.id, filename: p.filename }))}
+          gallerySlug={gallery.slug}
         />
       )}
     </div>

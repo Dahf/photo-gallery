@@ -36,6 +36,10 @@ export const galleries = pgTable(
     expiresAt: timestamp('expires_at', { withTimezone: true }),
     downloadEnabled: boolean('download_enabled').default(true).notNull(),
     favoritesEnabled: boolean('favorites_enabled').default(true).notNull(),
+    // Optional hero video shown above the photo grid.
+    heroVideoKey: text('hero_video_key'),
+    heroVideoMime: text('hero_video_mime'),
+    heroVideoSizeBytes: integer('hero_video_size_bytes'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [uniqueIndex('galleries_slug_idx').on(t.slug)]

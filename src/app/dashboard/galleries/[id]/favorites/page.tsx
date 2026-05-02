@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { galleries, photos, favorites } from '@/lib/db/schema';
 import { and, asc, eq, sql } from 'drizzle-orm';
 import { notFound, redirect } from 'next/navigation';
-import { publicPhotoUrl } from '@/lib/s3';
+import { photoUrl } from '@/lib/s3';
 import Link from 'next/link';
 
 export default async function GalleryFavoritesPage({
@@ -26,13 +26,12 @@ export default async function GalleryFavoritesPage({
     .select({
       photoId: photos.id,
       filename: photos.filename,
-      thumbKey: photos.s3KeyThumb,
       favoriteCount: sql<number>`count(${favorites.id})::int`,
     })
     .from(favorites)
     .innerJoin(photos, eq(photos.id, favorites.photoId))
     .where(eq(favorites.galleryId, gallery.id))
-    .groupBy(photos.id, photos.filename, photos.s3KeyThumb)
+    .groupBy(photos.id, photos.filename)
     .orderBy(asc(photos.sortOrder));
 
   return (
@@ -65,7 +64,7 @@ export default async function GalleryFavoritesPage({
             <li key={r.photoId} className="space-y-2">
               <div className="cell aspect-square">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={publicPhotoUrl(r.thumbKey)} alt={r.filename} className="h-full w-full object-cover" />
+                <img src={photoUrl(gallery.slug, r.photoId, 'thumb')} alt={r.filename} className="h-full w-full object-cover" />
                 <span className="fav-clip" />
                 <span className="fav-dot" />
                 {r.favoriteCount > 1 && (

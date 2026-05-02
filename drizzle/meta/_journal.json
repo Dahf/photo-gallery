@@ -8,6 +8,13 @@
       "when": 1777721028495,
       "tag": "0000_condemned_mattie_franklin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777737124016,
+      "tag": "0001_mute_scarecrow",
+      "breakpoints": true
     }
   ]
 }

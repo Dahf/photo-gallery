@@ -6,10 +6,9 @@ import { useRouter } from 'next/navigation';
 type Photo = {
   id: string;
   filename: string;
-  s3KeyThumb: string;
 };
 
-export function PhotoGrid({ photos, photosBaseUrl }: { photos: Photo[]; photosBaseUrl: string }) {
+export function PhotoGrid({ photos, gallerySlug }: { photos: Photo[]; gallerySlug: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -38,7 +37,7 @@ export function PhotoGrid({ photos, photosBaseUrl }: { photos: Photo[]; photosBa
           <li key={p.id} className="cell aspect-square group relative">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`${photosBaseUrl}/${p.s3KeyThumb}`}
+              src={`/api/g/${gallerySlug}/photo/${p.id}?v=thumb`}
               alt={p.filename}
               loading="lazy"
               className={`h-full w-full object-cover transition-opacity ${isDeleting ? 'opacity-30' : ''}`}

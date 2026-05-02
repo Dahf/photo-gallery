@@ -52,6 +52,14 @@ export async function getObjectStream(bucket: string, key: string) {
   return res.Body;
 }
 
+// For range-aware streaming (e.g. video seeking). Returns the full S3 response
+// so callers can forward Content-Length / Content-Range headers.
+export async function getRangedObject(bucket: string, key: string, range?: string) {
+  return internalClient().send(
+    new GetObjectCommand({ Bucket: bucket, Key: key, ...(range ? { Range: range } : {}) })
+  );
+}
+
 export async function getObjectBuffer(bucket: string, key: string): Promise<Buffer> {
   const body = await getObjectStream(bucket, key);
   if (!body) throw new Error(`Empty object: ${bucket}/${key}`);
@@ -79,4 +87,9 @@ export async function deleteObject(bucket: string, key: string) {
 
 export function publicPhotoUrl(key: string): string {
   return `${env.PHOTOS_PUBLIC_BASE_URL}/${key}`;
+}
+
+// Server-proxied image URL — auth-gated, replaces direct CDN access for thumb/web.
+export function photoUrl(slug: string, photoId: string, variant: 'thumb' | 'web' = 'thumb'): string {
+  return `/api/g/${slug}/photo/${photoId}?v=${variant}`;
 }

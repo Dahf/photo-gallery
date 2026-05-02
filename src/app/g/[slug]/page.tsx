@@ -3,7 +3,7 @@ import { galleries, photos, favorites, users } from '@/lib/db/schema';
 import { and, asc, eq, inArray } from 'drizzle-orm';
 import { notFound, redirect } from 'next/navigation';
 import { hasGalleryAccess, readClientSession } from '@/lib/gallery-auth';
-import { publicPhotoUrl } from '@/lib/s3';
+import { photoUrl } from '@/lib/s3';
 import { GalleryView } from './gallery-view';
 
 export default async function PublicGalleryPage({
@@ -24,6 +24,8 @@ export default async function PublicGalleryPage({
       favoritesEnabled: galleries.favoritesEnabled,
       expiresAt: galleries.expiresAt,
       createdAt: galleries.createdAt,
+      heroVideoKey: galleries.heroVideoKey,
+      heroVideoMime: galleries.heroVideoMime,
       studioName: users.studioName,
       logoUrl: users.logoUrl,
     })
@@ -68,8 +70,8 @@ export default async function PublicGalleryPage({
     id: p.id,
     width: p.width,
     height: p.height,
-    thumbUrl: publicPhotoUrl(p.s3KeyThumb),
-    webUrl: publicPhotoUrl(p.s3KeyWeb),
+    thumbUrl: photoUrl(gallery.slug, p.id, 'thumb'),
+    webUrl: photoUrl(gallery.slug, p.id, 'web'),
     filename: p.filename,
     isFavorite: favoriteIds.has(p.id),
     index: idx + 1,
@@ -140,6 +142,27 @@ export default async function PublicGalleryPage({
           </div>
         </div>
       </section>
+
+      {/* Hero video — full-bleed dark band, plays above the photo grid */}
+      {gallery.heroVideoKey && (
+        <section className="border-b border-line bg-bg">
+          <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
+            <div className="fade-up flex items-center gap-3 pb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
+              <span className="h-px w-8 bg-accent" />
+              <span>Hero film</span>
+            </div>
+            <div className="fade-up fade-up-1 overflow-hidden bg-black">
+              <video
+                src={`/api/g/${gallery.slug}/video`}
+                controls
+                playsInline
+                preload="metadata"
+                className="h-auto w-full"
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Grid */}
       <section className="flex-1 px-5 py-10 sm:px-8 sm:py-14">

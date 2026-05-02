@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { galleries, photos } from '@/lib/db/schema';
 import { eq, desc, sql } from 'drizzle-orm';
-import { publicPhotoUrl } from '@/lib/s3';
+import { photoUrl } from '@/lib/s3';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -17,7 +17,12 @@ export default async function DashboardPage() {
       createdAt: galleries.createdAt,
       passwordHash: galleries.passwordHash,
       photoCount: sql<number>`count(${photos.id})::int`,
-      coverThumbKey: sql<string | null>`max(${photos.s3KeyThumb})`,
+      coverPhotoId: sql<string | null>`(
+        select id from photos
+        where photos.gallery_id = galleries.id
+        order by sort_order asc, created_at asc
+        limit 1
+      )`,
     })
     .from(galleries)
     .leftJoin(photos, eq(photos.galleryId, galleries.id))
@@ -67,10 +72,10 @@ export default async function DashboardPage() {
                 className="group block border border-line bg-surface transition hover:border-accent"
               >
                 <div className="relative aspect-[5/4] overflow-hidden bg-surface-2">
-                  {g.coverThumbKey ? (
+                  {g.coverPhotoId ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={publicPhotoUrl(g.coverThumbKey)}
+                      src={photoUrl(g.slug, g.coverPhotoId, 'thumb')}
                       alt=""
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
                     />
