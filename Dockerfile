@@ -12,6 +12,15 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+# Build-time placeholders. Real values come from `.env` / docker-compose at runtime.
+# `next build` evaluates route modules (NextAuth, db client, S3) which otherwise
+# throw on missing envs. None of these placeholders are baked into runtime code.
+ENV DATABASE_URL=postgresql://build:build@localhost:5432/build \
+    AUTH_SECRET=build-time-placeholder-not-used-at-runtime \
+    S3_ENDPOINT=http://localhost:9000 \
+    S3_ACCESS_KEY=build \
+    S3_SECRET_KEY=build \
+    PHOTOS_PUBLIC_BASE_URL=http://localhost:9000/photos
 RUN npm run build
 
 FROM base AS runner

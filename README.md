@@ -55,13 +55,14 @@ Self-hosted photo gallery sharing for photographers — like Scrappbook/Pixieset
 
 ## Production deploy (VPS via Docker)
 
-1. Set `.env` on the VPS:
+1. Copy `.env.production` to the VPS as `.env` (it's gitignored — pre-filled for
+   `snapshot.silasbeckmann.de`). Or set the same vars in your environment:
 
    ```env
-   APP_URL=https://app.example.com
-   APP_DOMAIN=app.example.com
-   CDN_DOMAIN=cdn.example.com
-   PHOTOS_PUBLIC_BASE_URL=https://cdn.example.com/photos
+   APP_URL=https://snapshot.silasbeckmann.de
+   APP_DOMAIN=snapshot.silasbeckmann.de
+   CDN_DOMAIN=cdn.snapshot.silasbeckmann.de
+   PHOTOS_PUBLIC_BASE_URL=https://cdn.snapshot.silasbeckmann.de/photos
    AUTH_SECRET=...        # openssl rand -base64 32
    POSTGRES_PASSWORD=...
    MINIO_ROOT_USER=snapshare
@@ -75,10 +76,10 @@ Self-hosted photo gallery sharing for photographers — like Scrappbook/Pixieset
    Traefik (running externally on `traefik_proxy-net`) handles TLS for both
    hostnames via the labels in `docker-compose.prod.yml`.
 
-3. Build and start:
+3. Build and start (compose auto-loads `.env`):
 
    ```bash
-   docker compose -f docker-compose.prod.yml up -d --build
+   docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
    ```
 
 4. Apply migrations and create the admin user:
