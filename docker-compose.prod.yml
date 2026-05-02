@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    image: snapshare:latest
+    pull_policy: build
     restart: unless-stopped
     environment:
       NODE_ENV: production
