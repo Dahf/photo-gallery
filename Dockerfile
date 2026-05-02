@@ -44,10 +44,15 @@ COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./drizzle.confi
 COPY --from=builder --chown=nextjs:nodejs /app/src/lib/db ./src/lib/db
 # Standalone admin scripts (create-user, etc.) run with plain `node`.
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
-# drizzle-kit installed globally so its CLI is on PATH at /usr/local/bin/drizzle-kit
-# (a local --no-save install does not always create the .bin symlink alongside the
-# standalone-traced node_modules).
-RUN npm install -g drizzle-kit@0.31.10 tsx@4.21.0
+# drizzle-kit + its peer deps installed globally so the CLI resolves them
+# via Node's global module path. (A local --no-save install does not always
+# create the .bin symlink alongside the standalone-traced node_modules, and
+# globally-installed drizzle-kit needs drizzle-orm + a pg driver alongside it.)
+RUN npm install -g \
+      drizzle-kit@0.31.10 \
+      drizzle-orm@0.45.2 \
+      postgres@3.4.9 \
+      tsx@4.21.0
 RUN npm install --omit=optional --no-save \
       drizzle-orm@0.45.2 \
       postgres@3.4.9 \
