@@ -44,12 +44,14 @@ COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./drizzle.confi
 COPY --from=builder --chown=nextjs:nodejs /app/src/lib/db ./src/lib/db
 # Standalone admin scripts (create-user, etc.) run with plain `node`.
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
+# drizzle-kit installed globally so its CLI is on PATH at /usr/local/bin/drizzle-kit
+# (a local --no-save install does not always create the .bin symlink alongside the
+# standalone-traced node_modules).
+RUN npm install -g drizzle-kit@0.31.10 tsx@4.21.0
 RUN npm install --omit=optional --no-save \
-      drizzle-kit@0.31.10 \
       drizzle-orm@0.45.2 \
       postgres@3.4.9 \
       bcryptjs@3.0.3 \
-      tsx@4.21.0 \
     # Replace whatever sharp variant the standalone trace shipped with the
     # linuxmusl-x64 native binary so it actually loads in this Alpine runtime.
     && npm install --no-save --include=optional --os=linux --libc=musl --cpu=x64 sharp@0.34.5 \
