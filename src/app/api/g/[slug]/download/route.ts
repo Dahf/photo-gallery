@@ -39,7 +39,7 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: stri
   if (list.length === 0) return new Response('Empty gallery', { status: 404 });
 
   const sessionId = await getOrSetClientSession();
-  void recordEvent({ galleryId: gallery.id, eventType: 'download_zip', sessionId });
+  await recordEvent({ galleryId: gallery.id, eventType: 'download_zip', sessionId });
 
   const archive = archiver('zip', { zlib: { level: 0 } }); // Photos are already compressed
   const seenNames = new Set<string>();

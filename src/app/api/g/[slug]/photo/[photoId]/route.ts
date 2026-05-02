@@ -59,9 +59,11 @@ export async function GET(
   if (!body) return new Response('Not found', { status: 404 });
 
   // Track lightbox views — thumbnails are noisy and would inflate counts.
+  // Awaited (not fire-and-forget) because this route returns a streamed response;
+  // an unawaited insert can be cancelled when the framework closes the request.
   if (variant === 'web') {
     const sessionId = await getOrSetClientSession();
-    void recordEvent({ galleryId: gallery.id, photoId, eventType: 'view', sessionId });
+    await recordEvent({ galleryId: gallery.id, photoId, eventType: 'view', sessionId });
   }
 
   return new Response(body as unknown as ReadableStream, {

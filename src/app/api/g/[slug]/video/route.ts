@@ -42,10 +42,11 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   const range = req.headers.get('range') ?? undefined;
 
   // Track only the initial open (no Range, or Range starts at byte 0). Subsequent
-  // seeks emit further Range requests we want to ignore.
+  // seeks emit further Range requests we want to ignore. Awaited because this is a
+  // streamed response and an unawaited insert can be cancelled mid-flight.
   if (!range || /^bytes=0-/.test(range)) {
     const sessionId = await getOrSetClientSession();
-    void recordEvent({ galleryId: gallery.id, eventType: 'hero_play', sessionId });
+    await recordEvent({ galleryId: gallery.id, eventType: 'hero_play', sessionId });
   }
 
   const res = await getRangedObject(buckets.originals, gallery.heroVideoKey, range);

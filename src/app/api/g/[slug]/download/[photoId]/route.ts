@@ -41,7 +41,7 @@ export async function GET(
   if (!body) return new Response('Not found', { status: 404 });
 
   const sessionId = await getOrSetClientSession();
-  void recordEvent({ galleryId: gallery.id, photoId, eventType: 'download', sessionId });
+  await recordEvent({ galleryId: gallery.id, photoId, eventType: 'download', sessionId });
 
   return new Response(body as unknown as ReadableStream, {
     headers: {
