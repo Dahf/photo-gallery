@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-:root {
+:root,
+[data-theme="dark"] {
   /* Pro-Lab Dunkelraum */
   --bg:        #0a0908;
   --surface:   #141311;
@@ -10,9 +11,26 @@
   --text:      #f0ece6;
   --muted:     #8a857c;
   --dim:       #5a5650;
-  --accent:    #d6ff3a;     /* electric chartreuse */
-  --accent-deep: #b8df1c;
-  --warn:      #ff6a3d;
+  --accent:      #ff7849;   /* safelight vermillion */
+  --accent-deep: #e85d2c;
+  --warn:        #ffb84d;
+  --on-accent:   #1a0e08;   /* ink-on-accent */
+}
+
+[data-theme="light"] {
+  /* Contact-Sheet — warm paper */
+  --bg:        #f3ede2;
+  --surface:   #ebe4d4;
+  --surface-2: #ded5c0;
+  --line:      #cdc3aa;
+  --line-2:    #a89d83;
+  --text:      #14110d;
+  --muted:     #6c655a;
+  --dim:       #968d7d;
+  --accent:      #d9542a;   /* deeper persimmon for paper contrast */
+  --accent-deep: #b4391a;
+  --warn:        #b76b1a;
+  --on-accent:   #fff7ee;
 }
 
 @theme inline {
@@ -38,6 +56,13 @@ html, body {
   font-feature-settings: "ss01", "cv11";
 }
 
+/* Smooth theme handover — but keep instant feel */
+html { color-scheme: dark; }
+[data-theme="light"] { color-scheme: light; }
+html, body, .cell, .input, .btn-primary, .btn-ghost {
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
 /* Display utility — chunky uppercase by default */
 .display {
   font-family: var(--font-display), ui-sans-serif, system-ui;
@@ -60,15 +85,15 @@ html, body {
 
 @keyframes accent-flash {
   0%   { background: var(--accent); transform: scale(1); }
-  50%  { background: #fff; transform: scale(1.18); }
+  50%  { background: var(--on-accent); transform: scale(1.18); }
   100% { background: var(--accent); transform: scale(1); }
 }
 .accent-flash { animation: accent-flash 280ms ease-out both; }
 
-/* Chartreuse selection */
+/* Selection */
 ::selection {
   background: var(--accent);
-  color: var(--bg);
+  color: var(--on-accent);
 }
 
 /* Inputs */
@@ -89,7 +114,7 @@ html, body {
 /* Solid CTA */
 .btn-primary {
   background: var(--accent);
-  color: var(--bg);
+  color: var(--on-accent);
   font-weight: 700;
   padding: 14px 22px;
   text-transform: uppercase;
@@ -100,7 +125,7 @@ html, body {
   gap: 10px;
   transition: background 120ms, transform 120ms;
 }
-.btn-primary:hover { background: #fff; }
+.btn-primary:hover { background: var(--accent-deep); }
 .btn-primary:active { transform: translateY(1px); }
 
 .btn-ghost {
@@ -129,7 +154,7 @@ html, body {
   overflow: hidden;
 }
 
-/* Chartreuse corner clip — the differentiator marker for favourites */
+/* Accent corner clip — favourites marker */
 .fav-clip {
   position: absolute;
   top: 0; left: 0;
@@ -144,7 +169,7 @@ html, body {
   position: absolute;
   top: 6px; left: 6px;
   width: 6px; height: 6px;
-  background: var(--bg);
+  background: var(--on-accent);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -154,3 +179,29 @@ html, body {
   height: 1px;
   background: var(--line);
 }
+
+/* Theme toggle — minimal, lives in corners */
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 50;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 140ms, color 140ms, background 140ms;
+}
+.theme-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.theme-toggle svg { width: 16px; height: 16px; }
+.theme-toggle .icon-sun { display: none; }
+[data-theme="light"] .theme-toggle .icon-sun  { display: block; }
+[data-theme="light"] .theme-toggle .icon-moon { display: none; }
