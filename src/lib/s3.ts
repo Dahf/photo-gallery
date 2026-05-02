@@ -2,19 +2,32 @@ import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } fro
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from './env';
 
-let _client: S3Client | undefined;
-function client(): S3Client {
-  if (_client) return _client;
-  _client = new S3Client({
+// Internal client — used by the server for direct ops (sharp processing, ZIP streams).
+let _internal: S3Client | undefined;
+function internalClient(): S3Client {
+  if (_internal) return _internal;
+  _internal = new S3Client({
     endpoint: env.S3_ENDPOINT,
     region: env.S3_REGION,
-    credentials: {
-      accessKeyId: env.S3_ACCESS_KEY,
-      secretAccessKey: env.S3_SECRET_KEY,
-    },
-    forcePathStyle: true, // Required for MinIO
+    credentials: { accessKeyId: env.S3_ACCESS_KEY, secretAccessKey: env.S3_SECRET_KEY },
+    forcePathStyle: true,
   });
-  return _client;
+  return _internal;
+}
+
+// Public-facing client — used to *generate* presigned URLs that the BROWSER will hit.
+// Falls back to S3_ENDPOINT if S3_PUBLIC_ENDPOINT is not set (dev / single-host setups).
+let _public: S3Client | undefined;
+function publicClient(): S3Client {
+  if (_public) return _public;
+  const endpoint = env.S3_PUBLIC_ENDPOINT || env.S3_ENDPOINT;
+  _public = new S3Client({
+    endpoint,
+    region: env.S3_REGION,
+    credentials: { accessKeyId: env.S3_ACCESS_KEY, secretAccessKey: env.S3_SECRET_KEY },
+    forcePathStyle: true,
+  });
+  return _public;
 }
 
 export const buckets = {
@@ -28,14 +41,14 @@ export const buckets = {
 
 export async function presignPut(bucket: string, key: string, contentType: string, expiresInSeconds = 600) {
   return getSignedUrl(
-    client(),
+    publicClient(),
     new PutObjectCommand({ Bucket: bucket, Key: key, ContentType: contentType }),
     { expiresIn: expiresInSeconds }
   );
 }
 
 export async function getObjectStream(bucket: string, key: string) {
-  const res = await client().send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+  const res = await internalClient().send(new GetObjectCommand({ Bucket: bucket, Key: key }));
   return res.Body;
 }
 
@@ -49,7 +62,7 @@ export async function getObjectBuffer(bucket: string, key: string): Promise<Buff
 }
 
 export async function putObject(bucket: string, key: string, body: Buffer, contentType: string) {
-  await client().send(
+  await internalClient().send(
     new PutObjectCommand({
       Bucket: bucket,
       Key: key,
@@ -61,7 +74,7 @@ export async function putObject(bucket: string, key: string, body: Buffer, conte
 }
 
 export async function deleteObject(bucket: string, key: string) {
-  await client().send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
+  await internalClient().send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
 }
 
 export function publicPhotoUrl(key: string): string {
