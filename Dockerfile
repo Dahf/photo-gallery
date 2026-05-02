@@ -38,10 +38,13 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder --chown=nextjs:nodejs /app/src/lib/db ./src/lib/db
+# Standalone admin scripts (create-user, etc.) run with plain `node`.
+COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 RUN npm install --omit=optional --no-save \
       drizzle-kit@0.31.10 \
       drizzle-orm@0.45.2 \
       postgres@3.4.9 \
+      bcryptjs@3.0.3 \
     && chown -R nextjs:nodejs /app/node_modules
 
 USER nextjs
