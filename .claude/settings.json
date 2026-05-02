@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm view *)"
+      "Bash(npm view *)",
+      "Bash(rm c:/Users/silas/projects/photo-gallery/src/app/api/g/\\\\[slug\\\\]/video/presign/route.ts c:/Users/silas/projects/photo-gallery/src/app/api/g/\\\\[slug\\\\]/video/complete/route.ts)",
+      "Bash(rmdir c:/Users/silas/projects/photo-gallery/src/app/api/g/\\\\[slug\\\\]/video/presign c:/Users/silas/projects/photo-gallery/src/app/api/g/\\\\[slug\\\\]/video/complete)"
     ]
   }
 }

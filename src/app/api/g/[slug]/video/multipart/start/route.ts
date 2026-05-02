@@ -3,14 +3,10 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { galleries } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
-import { presignPut, buckets } from '@/lib/s3';
+import { buckets, createMultipartUpload } from '@/lib/s3';
 import { nanoid } from 'nanoid';
 
-const ALLOWED_MIMES = new Set([
-  'video/mp4',
-  'video/quicktime',
-  'video/webm',
-]);
+const ALLOWED_MIMES = new Set(['video/mp4', 'video/quicktime', 'video/webm']);
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   const session = await auth();
@@ -37,6 +33,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
 
   const ext = filename.includes('.') ? filename.slice(filename.lastIndexOf('.')) : '.mp4';
   const key = `${gallery.id}/hero_${nanoid(12)}${ext}`;
-  const uploadUrl = await presignPut(buckets.originals, key, contentType, 1800); // 30 min for big files
-  return NextResponse.json({ uploadUrl, key });
+
+  const uploadId = await createMultipartUpload(buckets.originals, key, contentType);
+  return NextResponse.json({ uploadId, key });
 }

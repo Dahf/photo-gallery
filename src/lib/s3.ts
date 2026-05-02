@@ -1,4 +1,14 @@
-import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  GetObjectCommand,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  CreateMultipartUploadCommand,
+  UploadPartCommand,
+  CompleteMultipartUploadCommand,
+  AbortMultipartUploadCommand,
+  type CompletedPart,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from './env';
 
@@ -92,4 +102,63 @@ export function publicPhotoUrl(key: string): string {
 // Server-proxied image URL — auth-gated, replaces direct CDN access for thumb/web.
 export function photoUrl(slug: string, photoId: string, variant: 'thumb' | 'web' = 'thumb'): string {
   return `/api/g/${slug}/photo/${photoId}?v=${variant}`;
+}
+
+// ---- Multipart upload (browser-driven, big-file friendly) ---------------
+
+export async function createMultipartUpload(
+  bucket: string,
+  key: string,
+  contentType: string
+): Promise<string> {
+  const res = await internalClient().send(
+    new CreateMultipartUploadCommand({ Bucket: bucket, Key: key, ContentType: contentType })
+  );
+  if (!res.UploadId) throw new Error('S3 did not return an UploadId');
+  return res.UploadId;
+}
+
+export async function presignUploadPart(
+  bucket: string,
+  key: string,
+  uploadId: string,
+  partNumber: number,
+  expiresInSeconds = 1800
+): Promise<string> {
+  return getSignedUrl(
+    publicClient(),
+    new UploadPartCommand({
+      Bucket: bucket,
+      Key: key,
+      UploadId: uploadId,
+      PartNumber: partNumber,
+    }),
+    { expiresIn: expiresInSeconds }
+  );
+}
+
+export async function completeMultipartUpload(
+  bucket: string,
+  key: string,
+  uploadId: string,
+  parts: CompletedPart[]
+): Promise<void> {
+  await internalClient().send(
+    new CompleteMultipartUploadCommand({
+      Bucket: bucket,
+      Key: key,
+      UploadId: uploadId,
+      MultipartUpload: { Parts: parts },
+    })
+  );
+}
+
+export async function abortMultipartUpload(
+  bucket: string,
+  key: string,
+  uploadId: string
+): Promise<void> {
+  await internalClient().send(
+    new AbortMultipartUploadCommand({ Bucket: bucket, Key: key, UploadId: uploadId })
+  );
 }
