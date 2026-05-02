@@ -34,9 +34,15 @@ RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-# drizzle migrations (apply via `drizzle-kit migrate` from a one-off container)
-COPY --from=builder /app/drizzle ./drizzle
-COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
+# drizzle migrations + tooling, so `npx drizzle-kit migrate` works in this image.
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=builder --chown=nextjs:nodejs /app/src/lib/db ./src/lib/db
+RUN npm install --omit=optional --no-save \
+      drizzle-kit@0.31.10 \
+      drizzle-orm@0.45.2 \
+      postgres@3.4.9 \
+    && chown -R nextjs:nodejs /app/node_modules
 
 USER nextjs
 EXPOSE 3000
