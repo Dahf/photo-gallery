@@ -58,16 +58,20 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BROWSER_REDIRECT_URL: https://${MINIO_CONSOLE_DOMAIN}
     volumes:
       - minio_data:/data
     labels:
-      # Public photo bucket — Cloudflare proxies CDN_DOMAIN and caches /photos/*.
       - traefik.enable=true
+      - traefik.docker.network=traefik_proxy-net
+
+      # ---- S3 API (public CDN) → Port 9000 ----
+      # Cloudflare proxies CDN_DOMAIN and caches /photos/*.
       - traefik.http.routers.snapshare-cdn.entrypoints=web,websecure
-      - traefik.http.services.snapshare-cdn.loadbalancer.server.port=9000
       - traefik.http.routers.snapshare-cdn.rule=Host(`${CDN_DOMAIN}`)
       - traefik.http.routers.snapshare-cdn.tls=true
-      - traefik.docker.network=traefik_proxy-net
+      - traefik.http.routers.snapshare-cdn.service=snapshare-cdn
+      - traefik.http.services.snapshare-cdn.loadbalancer.server.port=9000
       - traefik.http.middlewares.snapshare-cdn.headers.SSLRedirect=true
       - traefik.http.middlewares.snapshare-cdn.headers.STSSeconds=315360000
       - traefik.http.middlewares.snapshare-cdn.headers.browserXSSFilter=true
@@ -77,6 +81,22 @@ services:
       - traefik.http.middlewares.snapshare-cdn.headers.STSIncludeSubdomains=true
       - traefik.http.middlewares.snapshare-cdn.headers.STSPreload=true
       - traefik.http.routers.snapshare-cdn.middlewares=snapshare-cdn@docker
+
+      # ---- Admin Console → Port 9001 ----
+      - traefik.http.routers.snapshare-console.entrypoints=web,websecure
+      - traefik.http.routers.snapshare-console.rule=Host(`${MINIO_CONSOLE_DOMAIN}`)
+      - traefik.http.routers.snapshare-console.tls=true
+      - traefik.http.routers.snapshare-console.service=snapshare-console
+      - traefik.http.services.snapshare-console.loadbalancer.server.port=9001
+      - traefik.http.middlewares.snapshare-console.headers.SSLRedirect=true
+      - traefik.http.middlewares.snapshare-console.headers.STSSeconds=315360000
+      - traefik.http.middlewares.snapshare-console.headers.browserXSSFilter=true
+      - traefik.http.middlewares.snapshare-console.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.snapshare-console.headers.forceSTSHeader=true
+      - traefik.http.middlewares.snapshare-console.headers.SSLHost=${MINIO_CONSOLE_DOMAIN}
+      - traefik.http.middlewares.snapshare-console.headers.STSIncludeSubdomains=true
+      - traefik.http.middlewares.snapshare-console.headers.STSPreload=true
+      - traefik.http.routers.snapshare-console.middlewares=snapshare-console@docker
     networks:
       - default
       - traefik_proxy-net
