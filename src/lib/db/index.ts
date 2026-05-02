@@ -15,11 +15,15 @@ function getDb(): DB {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error('DATABASE_URL is not set');
 
+  // Cache the pool + drizzle instance on globalThis so every request reuses
+  // the same singleton. Without this, every getDb() call would open a fresh
+  // postgres-js pool (default max 10 conns) and exhaust Postgres after a
+  // handful of requests ("sorry, too many clients already").
   const client = globalForDb.__snapshareClient ?? postgres(url, { max: 10 });
-  if (process.env.NODE_ENV !== 'production') globalForDb.__snapshareClient = client;
+  globalForDb.__snapshareClient = client;
 
   const instance = drizzle(client, { schema });
-  if (process.env.NODE_ENV !== 'production') globalForDb.__snapshareDb = instance;
+  globalForDb.__snapshareDb = instance;
   return instance;
 }
 
