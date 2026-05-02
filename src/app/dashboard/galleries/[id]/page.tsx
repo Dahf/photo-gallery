@@ -34,54 +34,58 @@ export default async function GalleryAdminPage({
   const shareUrl = `${env.APP_URL}/g/${gallery.slug}`;
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-10">
+      <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">{gallery.title}</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            {photoList.length} photos • Slug: <code>{gallery.slug}</code>
-            {gallery.passwordHash && ' • password protected'}
-          </p>
+          <Link href="/dashboard" className="text-[11px] font-semibold uppercase tracking-[0.12em] text-dim hover:text-text">
+            ← Galleries
+          </Link>
+          <h1 className="display mt-4 text-4xl text-text sm:text-5xl">{gallery.title}</h1>
+          <div className="mt-3 flex flex-wrap items-center gap-4 text-[11px] uppercase tracking-[0.12em] text-dim">
+            <span className="tabular">{photoList.length.toString().padStart(3, '0')} photos</span>
+            <span>· /{gallery.slug}</span>
+            {gallery.passwordHash && (
+              <span className="bg-accent px-1.5 py-0.5 text-[10px] font-bold text-bg">Sealed</span>
+            )}
+          </div>
         </div>
         <div className="flex gap-2">
-          <Link
-            href={`/dashboard/galleries/${gallery.id}/favorites`}
-            className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-100"
-          >
-            View favorites
+          <Link href={`/dashboard/galleries/${gallery.id}/favorites`} className="btn-ghost">
+            Favourites
           </Link>
-          <Link
-            href={`/g/${gallery.slug}`}
-            target="_blank"
-            className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
-          >
-            Open client view ↗
+          <Link href={`/g/${gallery.slug}`} target="_blank" className="btn-primary">
+            Client view
+            <span aria-hidden>↗</span>
           </Link>
         </div>
       </div>
 
-      <div className="rounded-lg border border-neutral-200 bg-white p-4">
-        <div className="text-sm text-neutral-600">Share link:</div>
-        <code className="mt-1 block text-sm">{shareUrl}</code>
+      {/* Share-link card */}
+      <div className="border border-line bg-surface p-5">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Share link</div>
+        <code className="mt-2 block break-all text-sm text-text">{shareUrl}</code>
       </div>
 
       <UploadZone galleryId={gallery.id} />
 
       {photoList.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-neutral-300 p-12 text-center text-neutral-500">
-          Drop photos above to upload.
+        <div className="border border-dashed border-line py-24 text-center">
+          <p className="display text-2xl text-muted">Drop photos above to upload.</p>
         </div>
       ) : (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {photoList.map((p) => (
-            <li key={p.id} className="aspect-square overflow-hidden rounded-md bg-neutral-100">
+        <ul className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+          {photoList.map((p, idx) => (
+            <li key={p.id} className="cell aspect-square">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={publicPhotoUrl(p.s3KeyThumb)}
                 alt={p.filename}
-                className="h-full w-full object-cover"
                 loading="lazy"
+                className="h-full w-full object-cover"
               />
+              <div className="absolute bottom-1 right-1 tabular bg-bg/85 px-1 text-[10px] text-text">
+                {String(idx + 1).padStart(3, '0')}
+              </div>
             </li>
           ))}
         </ul>

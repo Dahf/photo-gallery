@@ -1,112 +1,156 @@
 @import "tailwindcss";
 
 :root {
-  /* Editorial Atelier palette */
-  --bone:    #F5F0E6;
-  --cream:   #EDE6D6;
-  --paper:   #FBF8F1;
-  --ink:     #15110D;
-  --char:    #3A332A;
-  --stone:   #8A8174;
-  --line:    #1A1612;
-  --seal:    #9F2B1F;
-  --seal-2:  #B23C2C;
-  --gold:    #B0904E;
+  /* Pro-Lab Dunkelraum */
+  --bg:        #0a0908;
+  --surface:   #141311;
+  --surface-2: #1d1c19;
+  --line:      #2a2825;
+  --line-2:    #3a3733;
+  --text:      #f0ece6;
+  --muted:     #8a857c;
+  --dim:       #5a5650;
+  --accent:    #d6ff3a;     /* electric chartreuse */
+  --accent-deep: #b8df1c;
+  --warn:      #ff6a3d;
 }
 
 @theme inline {
   --font-display: var(--font-display);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
+  --font-body:    var(--font-body);
 
-  --color-bone: var(--bone);
-  --color-cream: var(--cream);
-  --color-paper: var(--paper);
-  --color-ink: var(--ink);
-  --color-char: var(--char);
-  --color-stone: var(--stone);
-  --color-seal: var(--seal);
-  --color-gold: var(--gold);
+  --color-bg:        var(--bg);
+  --color-surface:   var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line:      var(--line);
+  --color-line-2:    var(--line-2);
+  --color-text:      var(--text);
+  --color-muted:     var(--muted);
+  --color-dim:       var(--dim);
+  --color-accent:    var(--accent);
 }
 
 html, body {
-  background: var(--bone);
-  color: var(--ink);
-  font-family: var(--font-sans), ui-sans-serif, system-ui;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body), ui-sans-serif, system-ui;
   -webkit-font-smoothing: antialiased;
-  text-rendering: geometricPrecision;
+  font-feature-settings: "ss01", "cv11";
 }
 
-/* Subtle paper grain — applied to the html element so it sits behind everything. */
-html::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.18;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.08 0 0 0 0 0.07 0 0 0 0 0.06 0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+/* Display utility — chunky uppercase by default */
+.display {
+  font-family: var(--font-display), ui-sans-serif, system-ui;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 0.92;
+  text-transform: uppercase;
 }
 
-body > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Editorial display utility */
-.font-display {
-  font-family: var(--font-display), ui-serif, Georgia, serif;
-  font-feature-settings: "ss01", "ss02";
-  font-variation-settings: "opsz" 144, "SOFT" 80, "WONK" 1;
-  letter-spacing: -0.02em;
-}
-.font-display-tight { letter-spacing: -0.04em; }
-
-.font-mono {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-feature-settings: "tnum";
-}
-
-/* Wax-seal pulse for favorites */
-@keyframes seal-stamp {
-  0%   { transform: scale(0.7) rotate(-12deg); opacity: 0; }
-  60%  { transform: scale(1.15) rotate(4deg); opacity: 1; }
-  100% { transform: scale(1) rotate(-3deg); opacity: 1; }
-}
-.seal-stamp { animation: seal-stamp 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-
-/* Slow editorial reveal */
-@keyframes rise {
-  from { opacity: 0; transform: translateY(14px); }
+/* Single, controlled page-load reveal — no scattered micro-animations */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.rise        { animation: rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-.rise-delay-1 { animation-delay: 80ms; }
-.rise-delay-2 { animation-delay: 180ms; }
-.rise-delay-3 { animation-delay: 320ms; }
-.rise-delay-4 { animation-delay: 480ms; }
+.fade-up { animation: fade-up 480ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.fade-up-1 { animation-delay: 60ms; }
+.fade-up-2 { animation-delay: 140ms; }
+.fade-up-3 { animation-delay: 240ms; }
+.fade-up-4 { animation-delay: 360ms; }
 
-/* Hairline rule */
-.rule {
-  background: linear-gradient(90deg, transparent, var(--ink) 12%, var(--ink) 88%, transparent);
-  height: 1px;
-  opacity: 0.55;
+@keyframes accent-flash {
+  0%   { background: var(--accent); transform: scale(1); }
+  50%  { background: #fff; transform: scale(1.18); }
+  100% { background: var(--accent); transform: scale(1); }
 }
+.accent-flash { animation: accent-flash 280ms ease-out both; }
 
-/* Photo frame — gives images a hand-printed border */
-.plate-frame {
-  background: var(--paper);
-  box-shadow:
-    0 1px 0 rgba(21, 17, 13, 0.04),
-    0 14px 40px -22px rgba(21, 17, 13, 0.35);
-}
-
-/* Custom selection */
+/* Chartreuse selection */
 ::selection {
-  background: var(--ink);
-  color: var(--bone);
+  background: var(--accent);
+  color: var(--bg);
 }
 
-/* Disable grain on lightbox / dark surfaces */
-.no-grain html::before, .no-grain::before { display: none; }
+/* Inputs */
+.input {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 14px 16px;
+  width: 100%;
+  font-size: 15px;
+  transition: border-color 140ms;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Solid CTA */
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+  padding: 14px 22px;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 120ms, transform 120ms;
+}
+.btn-primary:hover { background: #fff; }
+.btn-primary:active { transform: translateY(1px); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line-2);
+  padding: 13px 22px;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: border-color 140ms, color 140ms;
+}
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Tabular figures for indices */
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* Photo cell */
+.cell {
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Chartreuse corner clip — the differentiator marker for favourites */
+.fav-clip {
+  position: absolute;
+  top: 0; left: 0;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 28px 28px 0 0;
+  border-color: var(--accent) transparent transparent transparent;
+  pointer-events: none;
+}
+
+.fav-dot {
+  position: absolute;
+  top: 6px; left: 6px;
+  width: 6px; height: 6px;
+  background: var(--bg);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Hard divider */
+.hr-hard {
+  height: 1px;
+  background: var(--line);
+}

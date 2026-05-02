@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 export type GalleryItem = {
   id: string;
@@ -10,7 +10,7 @@ export type GalleryItem = {
   webUrl: string;
   filename: string;
   isFavorite: boolean;
-  plate: number;
+  index: number;
 };
 
 export function GalleryView({
@@ -28,7 +28,7 @@ export function GalleryView({
   const [favorites, setFavorites] = useState<Set<string>>(
     () => new Set(items.filter((i) => i.isFavorite).map((i) => i.id))
   );
-  const [stamping, setStamping] = useState<string | null>(null);
+  const [pulsing, setPulsing] = useState<string | null>(null);
 
   const close = useCallback(() => setActiveIdx(null), []);
   const next = useCallback(
@@ -40,8 +40,6 @@ export function GalleryView({
     [items.length]
   );
 
-  const total = useMemo(() => String(items.length).padStart(3, '0'), [items.length]);
-
   async function toggleFavorite(photoId: string) {
     const isFav = favorites.has(photoId);
     setFavorites((prev) => {
@@ -49,8 +47,8 @@ export function GalleryView({
       if (isFav) next.delete(photoId);
       else {
         next.add(photoId);
-        setStamping(photoId);
-        setTimeout(() => setStamping((s) => (s === photoId ? null : s)), 420);
+        setPulsing(photoId);
+        setTimeout(() => setPulsing((s) => (s === photoId ? null : s)), 320);
       }
       return next;
     });
@@ -90,62 +88,54 @@ export function GalleryView({
   }, [activeIdx, close, next, prev, favoritesEnabled, items]);
 
   const active = activeIdx === null ? null : items[activeIdx];
+  const total = String(items.length).padStart(3, '0');
 
   return (
     <>
-      {/* Asymmetric plate grid: every photo's column span is derived from its
-          aspect ratio + plate number to break monotony without losing rhythm. */}
-      <ul className="grid grid-cols-6 gap-x-3 gap-y-10 sm:gap-x-5 sm:gap-y-14 md:grid-cols-12">
+      {/* Dense uniform grid — pro contact-sheet rhythm */}
+      <ul className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 md:grid-cols-4 lg:grid-cols-5">
         {items.map((item, idx) => {
           const isFav = favorites.has(item.id);
-          const layout = layoutFor(item, idx);
           return (
-            <li
-              key={item.id}
-              className={`${layout.col} group relative`}
-              style={{ '--ar': `${item.width} / ${item.height}` } as React.CSSProperties}
-            >
-              {/* Plate number marginalia */}
-              <div className="mb-2 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-stone">
-                <span>
-                  Plate <span className="text-ink">{String(item.plate).padStart(3, '0')}</span> / {total}
-                </span>
-                {isFav && <span className="text-seal">⁕ favoured</span>}
-              </div>
-
+            <li key={item.id} className="cell aspect-square group">
               <button
                 onClick={() => setActiveIdx(idx)}
-                className="block w-full overflow-hidden plate-frame"
-                aria-label={`Open plate ${item.plate}`}
+                className="block h-full w-full"
+                aria-label={`Open photo ${item.index}`}
               >
-                <div
-                  className="relative w-full overflow-hidden bg-cream"
-                  style={{ aspectRatio: layout.forceAspect ?? `${item.width} / ${item.height}` }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.thumbUrl}
-                    alt=""
-                    loading="lazy"
-                    className="h-full w-full object-cover transition duration-700 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:scale-[1.03]"
-                  />
-                  {/* Subtle dark vignette on hover */}
-                  <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100"
-                       style={{ background: 'radial-gradient(120% 120% at 50% 100%, rgba(21,17,13,0.25), transparent 60%)' }} />
-                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={item.thumbUrl}
+                  alt=""
+                  loading="lazy"
+                  className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04] group-hover:opacity-90"
+                />
               </button>
+
+              {/* index pill — appears on hover */}
+              <div className="pointer-events-none absolute bottom-2 right-2 tabular bg-bg/85 px-1.5 py-0.5 text-[10px] font-semibold text-text opacity-0 transition group-hover:opacity-100">
+                {String(item.index).padStart(3, '0')}
+              </div>
+
+              {/* favourite chartreuse corner clip */}
+              {isFav && (
+                <>
+                  <span className={`fav-clip ${pulsing === item.id ? 'accent-flash' : ''}`} />
+                  <span className="fav-dot" />
+                </>
+              )}
 
               {favoritesEnabled && (
                 <button
                   onClick={() => toggleFavorite(item.id)}
-                  aria-label={isFav ? 'Remove favourite' : 'Mark as favourite'}
-                  className={`absolute right-3 top-9 z-10 flex h-9 w-9 items-center justify-center transition ${
+                  aria-label={isFav ? 'Remove favourite' : 'Mark favourite'}
+                  className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center border transition ${
                     isFav
-                      ? 'opacity-100'
-                      : 'opacity-0 group-hover:opacity-100 focus:opacity-100'
+                      ? 'border-accent bg-accent text-bg opacity-100'
+                      : 'border-line-2 bg-bg/80 text-text opacity-0 group-hover:opacity-100'
                   }`}
                 >
-                  <WaxSeal active={isFav} stamping={stamping === item.id} />
+                  <Star filled={isFav} />
                 </button>
               )}
             </li>
@@ -158,86 +148,97 @@ export function GalleryView({
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex flex-col bg-ink"
-          style={{ backgroundColor: '#0a0805' }}
+          className="fixed inset-0 z-50 flex flex-col bg-bg"
           onClick={close}
         >
-          {/* top chrome */}
+          {/* Top strip */}
           <div
-            className="flex items-center justify-between px-6 py-5 sm:px-10"
+            className="flex items-center justify-between border-b border-line px-5 py-3 sm:px-8"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone/60">
-              Plate <span className="text-bone">{String(active.plate).padStart(3, '0')}</span> / {total}
+            <div className="flex items-center gap-3">
+              <div className="h-2.5 w-2.5 bg-accent" />
+              <span className="tabular text-sm font-semibold">
+                {String(active.index).padStart(3, '0')}
+                <span className="text-dim"> / {total}</span>
+              </span>
+              <span className="hidden text-xs uppercase tracking-[0.12em] text-dim sm:inline">
+                {active.filename}
+              </span>
             </div>
             <button
               onClick={close}
               aria-label="Close"
-              className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone/70 hover:text-bone"
+              className="text-xs font-semibold uppercase tracking-[0.12em] text-muted hover:text-text"
             >
-              Close ✕
+              Close [esc]
             </button>
           </div>
 
-          {/* image stage */}
-          <div className="relative flex flex-1 items-center justify-center px-6 pb-6 sm:px-10">
+          {/* Stage */}
+          <div
+            className="relative flex flex-1 items-center justify-center px-4 py-4 sm:px-12"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                prev();
-              }}
-              className="absolute left-3 top-1/2 -translate-y-1/2 px-3 py-6 font-display text-4xl text-bone/40 transition hover:text-bone sm:left-6 sm:text-5xl"
+              onClick={prev}
               aria-label="Previous"
+              className="absolute left-2 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center text-2xl text-muted transition hover:text-accent sm:left-6"
             >
-              ‹
+              ←
             </button>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                next();
-              }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-6 font-display text-4xl text-bone/40 transition hover:text-bone sm:right-6 sm:text-5xl"
+              onClick={next}
               aria-label="Next"
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center text-2xl text-muted transition hover:text-accent sm:right-6"
             >
-              ›
+              →
             </button>
 
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={active.webUrl}
               alt={active.filename}
-              onClick={(e) => e.stopPropagation()}
-              className="max-h-[78vh] max-w-[88vw] object-contain shadow-[0_40px_120px_-30px_rgba(0,0,0,0.8)]"
+              className="max-h-[78vh] max-w-[90vw] object-contain"
             />
           </div>
 
-          {/* bottom chrome */}
+          {/* Bottom action strip — film-strip index */}
           <div
-            className="flex items-center justify-between gap-6 px-6 pb-8 pt-4 sm:px-10"
+            className="border-t border-line"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone/50">
-              {active.filename}
-            </div>
-            <div className="flex items-center gap-2">
-              {favoritesEnabled && (
-                <button
-                  onClick={() => toggleFavorite(active.id)}
-                  className="flex h-9 items-center gap-2 border border-bone/20 bg-transparent px-3 text-[10px] uppercase tracking-[0.22em] text-bone/80 transition hover:border-bone/60 hover:text-bone"
-                  aria-label="Toggle favourite"
-                >
-                  <WaxSeal active={favorites.has(active.id)} stamping={stamping === active.id} small />
-                  <span>{favorites.has(active.id) ? 'Favoured' : 'Favour'}</span>
-                </button>
-              )}
-              {downloadEnabled && (
-                <a
-                  href={`/api/g/${slug}/download/${active.id}`}
-                  className="flex h-9 items-center border border-bone/20 px-4 text-[10px] uppercase tracking-[0.22em] text-bone/80 transition hover:border-bone/60 hover:text-bone"
-                >
-                  Download original ↓
-                </a>
-              )}
+            <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-8">
+              <div className="flex items-center gap-2">
+                {favoritesEnabled && (
+                  <button
+                    onClick={() => toggleFavorite(active.id)}
+                    aria-label="Toggle favourite"
+                    className={`inline-flex items-center gap-2 border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition ${
+                      favorites.has(active.id)
+                        ? 'border-accent bg-accent text-bg'
+                        : 'border-line-2 text-text hover:border-accent hover:text-accent'
+                    }`}
+                  >
+                    <Star filled={favorites.has(active.id)} />
+                    <span>{favorites.has(active.id) ? 'Favoured' : 'Favour'}</span>
+                  </button>
+                )}
+                {downloadEnabled && (
+                  <a
+                    href={`/api/g/${slug}/download/${active.id}`}
+                    className="inline-flex items-center gap-2 border border-line-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-text transition hover:border-accent hover:text-accent"
+                  >
+                    <span>Download original</span>
+                    <span aria-hidden>↓</span>
+                  </a>
+                )}
+              </div>
+              <div className="hidden text-[11px] uppercase tracking-[0.12em] text-dim sm:block">
+                <kbd className="border border-line-2 px-1.5 py-px text-[10px]">←</kbd> prev ·
+                <kbd className="ml-2 border border-line-2 px-1.5 py-px text-[10px]">→</kbd> next ·
+                <kbd className="ml-2 border border-line-2 px-1.5 py-px text-[10px]">F</kbd> favour
+              </div>
             </div>
           </div>
         </div>
@@ -246,66 +247,19 @@ export function GalleryView({
   );
 }
 
-// Layout choice — gives variety across the grid.
-// Pattern repeats every 9 plates for a magazine-like rhythm.
-function layoutFor(item: GalleryItem, idx: number): { col: string; forceAspect?: string } {
-  const isLandscape = item.width >= item.height;
-  const slot = idx % 9;
-  // Hero: full wide landscape every 9th slot
-  if (slot === 0 && idx > 0) {
-    return {
-      col: 'col-span-6 md:col-span-12',
-      forceAspect: isLandscape ? '16 / 9' : undefined,
-    };
-  }
-  // Diptych: two large side-by-side
-  if (slot === 3 || slot === 4) {
-    return { col: 'col-span-6 md:col-span-6' };
-  }
-  // Tall portrait centerpiece
-  if (slot === 6 && !isLandscape) {
-    return { col: 'col-span-6 md:col-span-5 md:col-start-4' };
-  }
-  // Default: thirds — sized so a row of three feels generous
-  return { col: 'col-span-3 md:col-span-4' };
-}
-
-function WaxSeal({
-  active,
-  stamping,
-  small,
-}: {
-  active: boolean;
-  stamping: boolean;
-  small?: boolean;
-}) {
-  const size = small ? 16 : 22;
-  if (!active) {
-    return (
-      <span
-        className="flex items-center justify-center rounded-full border border-ink/30 bg-bone/85 backdrop-blur-sm"
-        style={{ width: size + 14, height: size + 14 }}
-      >
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-          <circle cx="12" cy="12" r="9.5" />
-          <path d="M8 12h8M12 8v8" strokeLinecap="round" />
-        </svg>
-      </span>
-    );
-  }
+function Star({ filled }: { filled: boolean }) {
   return (
-    <span
-      className={`flex items-center justify-center rounded-full text-bone shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_2px_8px_rgba(159,43,31,0.45)] ${stamping ? 'seal-stamp' : ''}`}
-      style={{
-        width: size + 14,
-        height: size + 14,
-        background:
-          'radial-gradient(120% 120% at 30% 25%, var(--seal-2) 0%, var(--seal) 55%, #6e1b13 100%)',
-      }}
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="square"
+      strokeLinejoin="miter"
     >
-      <svg width={size - 4} height={size - 4} viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 21s-7.5-4.7-9.7-9.5C.7 7.6 3.4 4 7 4c2 0 3.6 1.1 5 2.8C13.4 5.1 15 4 17 4c3.6 0 6.3 3.6 4.7 7.5C19.5 16.3 12 21 12 21z" />
-      </svg>
-    </span>
+      <path d="M12 3l2.7 6 6.3.5-4.8 4.2 1.5 6.3L12 16.8 6.3 20l1.5-6.3L3 9.5 9.3 9 12 3z" />
+    </svg>
   );
 }

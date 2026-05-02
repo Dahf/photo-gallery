@@ -25,7 +25,6 @@ export default async function PublicGalleryPage({
       expiresAt: galleries.expiresAt,
       createdAt: galleries.createdAt,
       studioName: users.studioName,
-      brandColor: users.brandColor,
       logoUrl: users.logoUrl,
     })
     .from(galleries)
@@ -70,108 +69,99 @@ export default async function PublicGalleryPage({
     webUrl: publicPhotoUrl(p.s3KeyWeb),
     filename: p.filename,
     isFavorite: favoriteIds.has(p.id),
-    plate: idx + 1,
+    index: idx + 1,
   }));
 
-  const dateLabel = gallery.createdAt.toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric',
-  });
-  const totalLabel = String(items.length).padStart(3, '0');
+  const dateLabel = gallery.createdAt
+    .toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    .replace(/\//g, '.');
 
   return (
-    <div
-      className="relative min-h-screen"
-      style={{ '--accent': gallery.brandColor ?? 'var(--seal)' } as React.CSSProperties}
-    >
-      {/* Marginalia header */}
-      <header className="px-6 pt-8 sm:px-12 sm:pt-10">
-        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-stone">
-          <span>{gallery.studioName ?? 'Snapshare'} ⁕ Atelier</span>
-          <span className="hidden md:inline">{dateLabel}</span>
-          <span>
-            <span className="text-ink">{totalLabel}</span> plates
+    <div className="flex min-h-screen flex-col bg-bg text-text">
+      {/* Sticky top bar — pro-tool chrome */}
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-bg/95 px-5 py-3 backdrop-blur sm:px-8">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="h-2.5 w-2.5 shrink-0 bg-accent" />
+          <span className="truncate text-sm font-semibold tracking-tight">
+            {gallery.studioName ?? 'Snapshot'}
+          </span>
+          <span className="hidden text-xs uppercase tracking-[0.12em] text-dim sm:inline">·</span>
+          <span className="hidden truncate text-xs uppercase tracking-[0.12em] text-muted sm:inline">
+            {gallery.title}
           </span>
         </div>
-        <div className="rule mt-4" />
+        <div className="flex items-center gap-2 sm:gap-4">
+          <span className="hidden tabular text-xs text-dim sm:inline">{dateLabel}</span>
+          <span className="tabular text-xs font-semibold text-text">
+            {String(items.length).padStart(3, '0')}
+          </span>
+          {gallery.downloadEnabled && items.length > 0 && (
+            <a
+              href={`/api/g/${gallery.slug}/download`}
+              className="ml-2 inline-flex items-center gap-2 border border-line-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-text transition hover:border-accent hover:text-accent"
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 4v12M6 12l6 6 6-6M4 20h16" strokeLinecap="square" />
+              </svg>
+              <span className="hidden sm:inline">Download all</span>
+              <span className="sm:hidden">.zip</span>
+            </a>
+          )}
+        </div>
       </header>
 
-      {/* Editorial title block — overlaps the first photo on desktop */}
-      <section className="relative px-6 pb-10 pt-14 sm:px-12 sm:pb-16 sm:pt-20 lg:pb-24 lg:pt-28">
-        <div className="grid grid-cols-12 gap-x-6">
-          <div className="col-span-12 lg:col-span-9">
-            <p className="rise font-mono text-[11px] uppercase tracking-[0.28em] text-stone">
-              Vol. I — {dateLabel}
+      {/* Title block */}
+      <section className="border-b border-line px-5 py-12 sm:px-8 sm:py-16">
+        <div className="mx-auto max-w-7xl">
+          <div className="fade-up flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+            <span className="text-accent">/ Gallery</span>
+            <span className="tabular text-dim">{dateLabel}</span>
+            <span className="tabular text-dim">{String(items.length).padStart(3, '0')} photos</span>
+            {gallery.passwordHash && <span className="text-dim">· Sealed</span>}
+          </div>
+
+          <h1 className="display fade-up fade-up-1 mt-6 text-[clamp(2.5rem,9vw,8rem)] text-text">
+            {gallery.title}
+          </h1>
+
+          {gallery.description && (
+            <p className="fade-up fade-up-2 mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
+              {gallery.description}
             </p>
-            <h1 className="rise rise-delay-1 font-display font-display-tight mt-6 text-[clamp(2.75rem,9vw,9rem)] leading-[0.86] text-ink">
-              {renderTitle(gallery.title)}
-            </h1>
-            {gallery.description && (
-              <p className="rise rise-delay-2 mt-8 max-w-xl text-lg leading-relaxed text-char">
-                {gallery.description}
-              </p>
-            )}
-          </div>
-          <div className="col-span-12 mt-10 flex items-end justify-between gap-6 lg:col-span-3 lg:mt-0 lg:justify-end">
-            {gallery.downloadEnabled && items.length > 0 && (
-              <a
-                href={`/api/g/${gallery.slug}/download`}
-                className="rise rise-delay-3 group inline-flex items-center gap-3 border border-ink bg-bone px-5 py-3.5 text-xs uppercase tracking-[0.2em] text-ink transition hover:bg-ink hover:text-bone"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M12 3v13M5 11l7 7 7-7M3 21h18" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span>Download binder</span>
-              </a>
-            )}
-          </div>
-        </div>
+          )}
 
-        {/* Decorative colophon */}
-        <div className="rise rise-delay-4 mt-14 flex items-center gap-6 font-mono text-[10px] uppercase tracking-[0.22em] text-stone sm:mt-20">
-          <span>§ Press F to favourite</span>
-          <span className="hidden sm:inline">↔ Arrow keys to navigate</span>
-          <span className="hidden sm:inline">Esc to close</span>
+          <div className="fade-up fade-up-3 mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] uppercase tracking-[0.12em] text-dim">
+            <span><kbd className="border border-line-2 px-1.5 py-px text-[10px]">←</kbd> <kbd className="border border-line-2 px-1.5 py-px text-[10px]">→</kbd> Navigate</span>
+            <span><kbd className="border border-line-2 px-1.5 py-px text-[10px]">F</kbd> Favourite</span>
+            <span><kbd className="border border-line-2 px-1.5 py-px text-[10px]">Esc</kbd> Close</span>
+          </div>
         </div>
       </section>
 
-      {/* Plate grid */}
-      <section className="px-6 pb-24 sm:px-12 sm:pb-32">
-        {items.length === 0 ? (
-          <div className="border-y border-ink/15 py-32 text-center">
-            <p className="font-display text-3xl italic text-stone">No plates pressed yet.</p>
-          </div>
-        ) : (
-          <GalleryView
-            items={items}
-            slug={gallery.slug}
-            downloadEnabled={gallery.downloadEnabled}
-            favoritesEnabled={gallery.favoritesEnabled}
-          />
-        )}
+      {/* Grid */}
+      <section className="flex-1 px-5 py-10 sm:px-8 sm:py-14">
+        <div className="mx-auto max-w-7xl">
+          {items.length === 0 ? (
+            <div className="border border-dashed border-line py-32 text-center">
+              <p className="display text-3xl text-muted">No photos yet.</p>
+            </div>
+          ) : (
+            <GalleryView
+              items={items}
+              slug={gallery.slug}
+              downloadEnabled={gallery.downloadEnabled}
+              favoritesEnabled={gallery.favoritesEnabled}
+            />
+          )}
+        </div>
       </section>
 
-      <footer className="border-t border-ink/15 px-6 pb-10 pt-6 sm:px-12">
-        <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-[10px] uppercase tracking-[0.22em] text-stone">
-          <span>{gallery.studioName ?? 'Snapshare'}</span>
-          <span>End of volume — {totalLabel} plates</span>
+      <footer className="border-t border-line px-5 py-5 sm:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between text-[11px] uppercase tracking-[0.12em] text-dim">
+          <span>{gallery.studioName ?? 'Snapshot'}</span>
+          <span>End — {String(items.length).padStart(3, '0')} photos</span>
         </div>
       </footer>
     </div>
-  );
-}
-
-// Render the last word of the title in italic for editorial drama.
-function renderTitle(title: string) {
-  const words = title.trim().split(/\s+/);
-  if (words.length === 1) return <em className="font-normal italic">{words[0]}</em>;
-  const head = words.slice(0, -1).join(' ');
-  const tail = words[words.length - 1];
-  return (
-    <>
-      {head}
-      <br />
-      <em className="font-normal italic text-seal">{tail}</em>
-    </>
   );
 }

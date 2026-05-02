@@ -43,67 +43,62 @@ export default async function PasswordPage({
 
   return (
     <main className="flex min-h-screen flex-col">
-      <div className="px-6 pt-8 sm:px-12 sm:pt-10">
-        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-stone">
-          <span>Snapshare ⁕ Atelier</span>
-          <span>Sealed envelope</span>
+      <header className="flex items-center justify-between border-b border-line px-5 py-3 sm:px-8">
+        <div className="flex items-center gap-3">
+          <div className="h-2.5 w-2.5 bg-accent" />
+          <span className="text-sm font-semibold tracking-tight">Snapshot</span>
         </div>
-        <div className="rule mt-4" />
-      </div>
+        <span className="text-xs uppercase tracking-[0.12em] text-dim">Sealed gallery</span>
+      </header>
 
-      <div className="flex flex-1 items-center justify-center px-6 py-16 sm:px-12">
-        <form action={submit} className="w-full max-w-md">
-          {/* Wax seal at top */}
-          <div className="rise mx-auto mb-10 flex h-16 w-16 items-center justify-center rounded-full text-bone shadow-[inset_0_1px_3px_rgba(255,255,255,0.25),0_8px_30px_-8px_rgba(159,43,31,0.6)]"
-               style={{ background: 'radial-gradient(120% 120% at 30% 25%, var(--seal-2) 0%, var(--seal) 55%, #6e1b13 100%)' }}>
-            <span className="font-display text-2xl italic">S</span>
+      <div className="flex flex-1 items-center justify-center px-5 py-12 sm:px-8">
+        <form action={submit} className="fade-up w-full max-w-md">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
+            <span className="h-px w-8 bg-accent" />
+            <span>Restricted access</span>
           </div>
 
-          <p className="rise rise-delay-1 text-center font-mono text-[10px] uppercase tracking-[0.28em] text-stone">
-            Volume — restricted access
-          </p>
-          <h1 className="rise rise-delay-2 mt-4 text-center font-display text-5xl leading-[0.95] text-ink sm:text-6xl">
-            <em className="font-normal italic">{gallery.title}</em>
+          <h1 className="display fade-up-1 mt-5 text-5xl text-text sm:text-6xl">
+            {gallery.title}
           </h1>
-          <p className="rise rise-delay-3 mt-4 text-center text-base text-char">
-            This gallery is sealed. Please present the key your photographer shared with you.
+
+          <p className="fade-up-2 mt-4 text-base text-muted">
+            This gallery is password-protected. Enter the key your photographer shared with you.
           </p>
 
           {error && (
-            <div className="rise mt-6 border border-seal/40 bg-seal/8 px-4 py-3 text-center text-sm text-seal">
-              The key did not turn. Please try again.
+            <div className="fade-up-2 mt-6 border border-warn/50 bg-warn/8 px-4 py-3 text-sm text-warn"
+                 style={{ color: 'var(--warn)', borderColor: 'rgba(255,106,61,0.5)', background: 'rgba(255,106,61,0.08)' }}>
+              Wrong key. Try again.
             </div>
           )}
 
-          <div className="rise rise-delay-4 mt-10">
+          <div className="fade-up-3 mt-8">
             <label className="block">
-              <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone">Key</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Key</span>
               <input
                 name="password"
                 type="password"
                 required
                 autoFocus
                 autoComplete="off"
-                className="mt-2 w-full border-0 border-b border-ink bg-transparent px-0 py-3 font-display text-2xl tracking-wide text-ink placeholder:text-stone/50 focus:border-seal focus:outline-none"
+                className="input mt-2"
                 placeholder="••••••••"
               />
             </label>
 
-            <button
-              type="submit"
-              className="group mt-8 flex w-full items-center justify-center gap-3 bg-ink py-4 text-xs uppercase tracking-[0.24em] text-bone transition hover:bg-seal"
-            >
-              <span>Break the seal</span>
-              <span className="font-mono transition group-hover:translate-x-1">→</span>
+            <button type="submit" className="btn-primary mt-6 w-full justify-center">
+              Unlock
+              <span aria-hidden>→</span>
             </button>
           </div>
         </form>
       </div>
 
-      <footer className="px-6 pb-10 sm:px-12">
-        <div className="rule mb-6" />
-        <div className="text-center font-mono text-[10px] uppercase tracking-[0.22em] text-stone">
-          Snapshare — A studio of one
+      <footer className="border-t border-line px-5 py-4 sm:px-8">
+        <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-dim">
+          <span>Snapshot · self-hosted</span>
+          <span>silasbeckmann.de</span>
         </div>
       </footer>
     </main>

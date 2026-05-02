@@ -39,21 +39,33 @@ export default function NewGalleryPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-3xl font-semibold tracking-tight">New gallery</h1>
-      <form action={create} className="space-y-5 rounded-lg border border-neutral-200 bg-white p-8">
-        <Field label="Title" name="title" required placeholder="Müller Family Wedding" />
-        <Field label="Description" name="description" placeholder="Optional" />
-        <Field label="Password (optional)" name="password" type="password" placeholder="Leave blank for no password" />
-        <div className="flex flex-col gap-2 pt-2">
-          <Toggle name="downloadEnabled" defaultChecked label="Allow client downloads" />
-          <Toggle name="favoritesEnabled" defaultChecked label="Allow client favorites" />
+    <div className="mx-auto max-w-2xl space-y-8">
+      <div>
+        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
+          <span className="h-px w-8 bg-accent" />
+          <span>New gallery</span>
         </div>
-        <button
-          type="submit"
-          className="w-full rounded-md bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-700"
-        >
+        <h1 className="display mt-4 text-5xl text-text">Set up</h1>
+      </div>
+
+      <form action={create} className="space-y-6 border border-line bg-surface p-8">
+        <Field label="Title" name="title" required placeholder="Müller wedding · Aug 2026" />
+        <Field label="Description" name="description" placeholder="Optional · shown to client at top" />
+        <Field
+          label="Password (optional)"
+          name="password"
+          type="password"
+          placeholder="Leave blank for an open link"
+        />
+
+        <div className="space-y-3 border-t border-line pt-5">
+          <Toggle name="downloadEnabled" defaultChecked label="Allow client downloads (single + ZIP)" />
+          <Toggle name="favoritesEnabled" defaultChecked label="Allow client favourites" />
+        </div>
+
+        <button type="submit" className="btn-primary mt-2 w-full justify-center">
           Create gallery
+          <span aria-hidden>→</span>
         </button>
       </form>
     </div>
@@ -75,22 +87,29 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-neutral-700">{label}</span>
-      <input
-        name={name}
-        type={type}
-        required={required}
-        placeholder={placeholder}
-        className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
-      />
+      <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
+      <input name={name} type={type} required={required} placeholder={placeholder} className="input mt-2" />
     </label>
   );
 }
 
-function Toggle({ name, label, defaultChecked }: { name: string; label: string; defaultChecked?: boolean }) {
+function Toggle({
+  name,
+  label,
+  defaultChecked,
+}: {
+  name: string;
+  label: string;
+  defaultChecked?: boolean;
+}) {
   return (
-    <label className="flex items-center gap-2 text-sm">
-      <input type="checkbox" name={name} defaultChecked={defaultChecked} className="h-4 w-4" />
+    <label className="flex cursor-pointer items-center gap-3 text-sm text-text">
+      <input
+        type="checkbox"
+        name={name}
+        defaultChecked={defaultChecked}
+        className="h-4 w-4 accent-[var(--accent)]"
+      />
       {label}
     </label>
   );

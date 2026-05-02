@@ -21,43 +21,46 @@ export default function LoginPage({
 
   return (
     <main className="flex min-h-screen flex-col">
-      <div className="px-6 pt-8 sm:px-12 sm:pt-10">
-        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-stone">
-          <Link href="/" className="hover:text-ink transition">← Atelier</Link>
-          <span>Studio entrance</span>
-        </div>
-        <div className="rule mt-4" />
-      </div>
+      <header className="flex items-center justify-between border-b border-line px-5 py-3 sm:px-8">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="h-2.5 w-2.5 bg-accent" />
+          <span className="text-sm font-semibold tracking-tight">Snapshot</span>
+        </Link>
+        <span className="text-xs uppercase tracking-[0.12em] text-dim">Studio sign-in</span>
+      </header>
 
-      <div className="flex flex-1 items-center justify-center px-6 py-16 sm:px-12">
-        <form action={login} className="w-full max-w-md">
-          <p className="rise text-center font-mono text-[10px] uppercase tracking-[0.28em] text-stone">
-            Studio entrance
-          </p>
-          <h1 className="rise rise-delay-1 mt-4 text-center font-display font-display-tight text-6xl leading-[0.9] text-ink sm:text-7xl">
-            Welcome <em className="font-normal italic text-seal">back</em>.
+      <div className="flex flex-1 items-center justify-center px-5 py-12 sm:px-8">
+        <form action={login} className="fade-up w-full max-w-md">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
+            <span className="h-px w-8 bg-accent" />
+            <span>Studio</span>
+          </div>
+
+          <h1 className="display fade-up-1 mt-5 text-5xl text-text sm:text-6xl">
+            Sign in.
           </h1>
+
+          <p className="fade-up-2 mt-4 text-base text-muted">
+            Enter your credentials to manage galleries.
+          </p>
 
           <ErrorBanner searchParams={searchParams} />
 
-          <div className="rise rise-delay-3 mt-10 space-y-7">
+          <div className="fade-up-3 mt-8 space-y-5">
             <Field label="Email" name="email" type="email" autoComplete="email" />
             <Field label="Password" name="password" type="password" autoComplete="current-password" />
-            <button
-              type="submit"
-              className="group flex w-full items-center justify-center gap-3 bg-ink py-4 text-xs uppercase tracking-[0.24em] text-bone transition hover:bg-seal"
-            >
-              <span>Enter</span>
-              <span className="font-mono transition group-hover:translate-x-1">→</span>
+            <button type="submit" className="btn-primary w-full justify-center">
+              Enter studio
+              <span aria-hidden>→</span>
             </button>
           </div>
         </form>
       </div>
 
-      <footer className="px-6 pb-10 sm:px-12">
-        <div className="rule mb-6" />
-        <div className="text-center font-mono text-[10px] uppercase tracking-[0.22em] text-stone">
-          Self-hosted. Yours alone.
+      <footer className="border-t border-line px-5 py-4 sm:px-8">
+        <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-dim">
+          <span>Snapshot · self-hosted</span>
+          <span>silasbeckmann.de</span>
         </div>
       </footer>
     </main>
@@ -77,14 +80,8 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone">{label}</span>
-      <input
-        name={name}
-        type={type}
-        autoComplete={autoComplete}
-        required
-        className="mt-2 w-full border-0 border-b border-ink bg-transparent px-0 py-3 font-display text-2xl text-ink placeholder:text-stone/50 focus:border-seal focus:outline-none"
-      />
+      <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
+      <input name={name} type={type} autoComplete={autoComplete} required className="input mt-2" />
     </label>
   );
 }
@@ -93,7 +90,10 @@ async function ErrorBanner({ searchParams }: { searchParams: Promise<{ error?: s
   const { error } = await searchParams;
   if (!error) return null;
   return (
-    <div className="rise rise-delay-2 mt-8 border border-seal/40 bg-seal/8 px-4 py-3 text-center text-sm text-seal">
+    <div
+      className="fade-up-2 mt-6 px-4 py-3 text-sm"
+      style={{ color: 'var(--warn)', borderColor: 'rgba(255,106,61,0.5)', background: 'rgba(255,106,61,0.08)', border: '1px solid rgba(255,106,61,0.5)' }}
+    >
       Email or password did not match.
     </div>
   );

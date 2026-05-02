@@ -17,33 +17,28 @@ export default async function SettingsPage() {
     if (!s?.user) redirect('/login');
     const name = String(formData.get('name') ?? '').trim() || null;
     const studioName = String(formData.get('studioName') ?? '').trim() || null;
-    const brandColor = String(formData.get('brandColor') ?? '#111111');
     const logoUrl = String(formData.get('logoUrl') ?? '').trim() || null;
-    await db.update(users).set({ name, studioName, brandColor, logoUrl }).where(eq(users.id, s.user.id));
+    await db.update(users).set({ name, studioName, logoUrl }).where(eq(users.id, s.user.id));
     revalidatePath('/dashboard/settings');
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
-      <form action={save} className="space-y-5 rounded-lg border border-neutral-200 bg-white p-8">
+    <div className="mx-auto max-w-2xl space-y-8">
+      <div>
+        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
+          <span className="h-px w-8 bg-accent" />
+          <span>Studio settings</span>
+        </div>
+        <h1 className="display mt-4 text-5xl text-text">Settings</h1>
+      </div>
+
+      <form action={save} className="space-y-6 border border-line bg-surface p-8">
         <Field label="Your name" name="name" defaultValue={user?.name ?? ''} />
-        <Field label="Studio name" name="studioName" defaultValue={user?.studioName ?? ''} />
-        <Field label="Logo URL" name="logoUrl" defaultValue={user?.logoUrl ?? ''} placeholder="https://..." />
-        <label className="block">
-          <span className="text-sm font-medium text-neutral-700">Brand color</span>
-          <input
-            type="color"
-            name="brandColor"
-            defaultValue={user?.brandColor ?? '#111111'}
-            className="mt-1 h-10 w-20 rounded-md border border-neutral-300"
-          />
-        </label>
-        <button
-          type="submit"
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
-        >
-          Save
+        <Field label="Studio name" name="studioName" defaultValue={user?.studioName ?? ''} placeholder="Shown on every gallery" />
+        <Field label="Logo URL" name="logoUrl" defaultValue={user?.logoUrl ?? ''} placeholder="https://…" />
+        <button type="submit" className="btn-primary mt-2">
+          Save settings
+          <span aria-hidden>→</span>
         </button>
       </form>
     </div>
@@ -63,13 +58,8 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-neutral-700">{label}</span>
-      <input
-        name={name}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-        className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
-      />
+      <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
+      <input name={name} defaultValue={defaultValue} placeholder={placeholder} className="input mt-2" />
     </label>
   );
 }

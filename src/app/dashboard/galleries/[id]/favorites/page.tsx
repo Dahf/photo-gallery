@@ -36,33 +36,47 @@ export default async function GalleryFavoritesPage({
     .orderBy(asc(photos.sortOrder));
 
   return (
-    <div className="space-y-6">
-      <Link href={`/dashboard/galleries/${gallery.id}`} className="text-sm text-neutral-500 hover:text-neutral-900">
+    <div className="space-y-8">
+      <Link
+        href={`/dashboard/galleries/${gallery.id}`}
+        className="text-[11px] font-semibold uppercase tracking-[0.12em] text-dim hover:text-text"
+      >
         ← Back to gallery
       </Link>
-      <h1 className="text-3xl font-semibold tracking-tight">Favorites — {gallery.title}</h1>
-      <p className="text-sm text-neutral-500">
-        {rows.length} {rows.length === 1 ? 'photo' : 'photos'} marked as favorite by clients.
-      </p>
+
+      <div>
+        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
+          <span className="h-px w-8 bg-accent" />
+          <span>Client favourites</span>
+        </div>
+        <h1 className="display mt-4 text-4xl text-text sm:text-5xl">{gallery.title}</h1>
+        <p className="mt-3 tabular text-sm text-muted">
+          {String(rows.length).padStart(3, '0')} {rows.length === 1 ? 'photo' : 'photos'} marked as favourite
+        </p>
+      </div>
 
       {rows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-neutral-300 p-12 text-center text-neutral-500">
-          No favorites yet.
-        </p>
+        <div className="border border-dashed border-line py-24 text-center">
+          <p className="display text-2xl text-muted">No favourites yet.</p>
+        </div>
       ) : (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
           {rows.map((r) => (
-            <li key={r.photoId} className="space-y-1">
-              <div className="aspect-square overflow-hidden rounded-md bg-neutral-100">
+            <li key={r.photoId} className="space-y-2">
+              <div className="cell aspect-square">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={publicPhotoUrl(r.thumbKey)} alt={r.filename} className="h-full w-full object-cover" />
+                <span className="fav-clip" />
+                <span className="fav-dot" />
+                {r.favoriteCount > 1 && (
+                  <div className="absolute bottom-1 right-1 tabular bg-accent px-1.5 py-0.5 text-[10px] font-bold text-bg">
+                    ×{r.favoriteCount}
+                  </div>
+                )}
               </div>
-              <div className="truncate text-xs text-neutral-500" title={r.filename}>
+              <div className="truncate text-[11px] text-dim" title={r.filename}>
                 {r.filename}
               </div>
-              {r.favoriteCount > 1 && (
-                <div className="text-xs text-red-600">★ {r.favoriteCount} clients</div>
-              )}
             </li>
           ))}
         </ul>

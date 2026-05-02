@@ -1,37 +1,30 @@
 import type { Metadata } from 'next';
-import { Fraunces, Bricolage_Grotesque, DM_Mono } from 'next/font/google';
+import { Archivo_Black, Albert_Sans } from 'next/font/google';
 import './globals.css';
 
-const fraunces = Fraunces({
+const display = Archivo_Black({
   variable: '--font-display',
   subsets: ['latin'],
-  axes: ['opsz', 'SOFT', 'WONK'],
+  weight: '400',
   display: 'swap',
 });
 
-const bricolage = Bricolage_Grotesque({
-  variable: '--font-sans',
+const body = Albert_Sans({
+  variable: '--font-body',
   subsets: ['latin'],
-  display: 'swap',
-});
-
-const dmMono = DM_Mono({
-  variable: '--font-mono',
-  subsets: ['latin'],
-  weight: ['300', '400', '500'],
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'Snapshare — atelier of the moment',
-  description: 'Photographic galleries, hand-set for clients.',
+  title: 'Snapshot — photo galleries',
+  description: 'Self-hosted photo galleries for clients.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${bricolage.variable} ${dmMono.variable} h-full antialiased`}
+      className={`${display.variable} ${body.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

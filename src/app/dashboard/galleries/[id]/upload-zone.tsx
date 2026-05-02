@@ -110,8 +110,8 @@ export function UploadZone({ galleryId }: { galleryId: string }) {
           setDragOver(false);
           onFiles(e.dataTransfer.files);
         }}
-        className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-10 text-center transition ${
-          dragOver ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-300'
+        className={`flex cursor-pointer flex-col items-center justify-center border-2 border-dashed p-12 text-center transition ${
+          dragOver ? 'border-accent bg-surface' : 'border-line'
         }`}
       >
         <input
@@ -121,29 +121,29 @@ export function UploadZone({ galleryId }: { galleryId: string }) {
           className="hidden"
           onChange={(e) => onFiles(e.target.files)}
         />
-        <div className="text-sm font-medium">Drop photos here or click to browse</div>
-        <div className="mt-1 text-xs text-neutral-500">JPG, PNG, WebP, HEIC — bulk upload supported</div>
+        <div className="display text-2xl text-text">Drop photos · or click</div>
+        <div className="mt-2 text-[11px] uppercase tracking-[0.12em] text-dim">JPG · PNG · WebP · HEIC — bulk upload</div>
       </label>
 
       {items.length > 0 && (
-        <div className="mt-4 rounded-md border border-neutral-200 bg-white p-3 text-sm">
-          <div className="flex justify-between text-neutral-700">
-            <span>
-              {done} of {items.length} uploaded
-              {pending > 0 && ` • ${pending} in progress`}
-              {failed > 0 && ` • ${failed} failed`}
+        <div className="mt-4 border border-line bg-surface p-4 text-sm">
+          <div className="flex justify-between text-text">
+            <span className="tabular">
+              {String(done).padStart(3, '0')} / {String(items.length).padStart(3, '0')} uploaded
+              {pending > 0 && ` · ${pending} in progress`}
+              {failed > 0 && ` · ${failed} failed`}
             </span>
             {pending === 0 && (
               <button
                 onClick={() => setItems([])}
-                className="text-neutral-500 hover:text-neutral-900"
+                className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted hover:text-accent"
               >
                 Clear
               </button>
             )}
           </div>
           {failed > 0 && (
-            <ul className="mt-2 space-y-1 text-xs text-red-700">
+            <ul className="mt-2 space-y-1 text-xs" style={{ color: 'var(--warn)' }}>
               {items
                 .filter((i) => i.status === 'error')
                 .map((i) => (
