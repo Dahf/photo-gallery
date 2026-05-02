@@ -13,27 +13,24 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/dashboard" className="text-lg font-semibold tracking-tight">
-            Snapshare
+      <header className="px-6 pt-8 sm:px-12 sm:pt-10">
+        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-stone">
+          <Link href="/dashboard" className="text-ink hover:text-seal transition">
+            Snapshare ⁕ Studio
           </Link>
-          <nav className="flex items-center gap-6 text-sm text-neutral-600">
-            <Link href="/dashboard" className="hover:text-neutral-900">
-              Galleries
-            </Link>
-            <Link href="/dashboard/settings" className="hover:text-neutral-900">
-              Settings
-            </Link>
+          <nav className="flex items-center gap-8">
+            <Link href="/dashboard" className="hover:text-ink transition">Galleries</Link>
+            <Link href="/dashboard/settings" className="hover:text-ink transition">Settings</Link>
             <form action={logout}>
-              <button type="submit" className="hover:text-neutral-900">
-                Sign out
+              <button type="submit" className="hover:text-seal transition">
+                Sign out →
               </button>
             </form>
           </nav>
         </div>
+        <div className="rule mt-4" />
       </header>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-14 sm:px-12">{children}</main>
     </div>
   );
 }
