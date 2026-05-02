@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Archivo_Black, Albert_Sans } from 'next/font/google';
-import { ThemeToggle } from '@/components/theme-toggle';
 import './globals.css';
 
 const display = Archivo_Black({
@@ -32,10 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Sync theme before paint to avoid flash. */}
         <script src="/theme-boot.js" />
       </head>
-      <body className="min-h-full flex flex-col">
-        <ThemeToggle />
-        {children}
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

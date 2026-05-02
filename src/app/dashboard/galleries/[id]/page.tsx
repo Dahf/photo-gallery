@@ -6,6 +6,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { UploadZone } from './upload-zone';
 import { PhotoGrid } from './photo-grid';
+import { DeleteGalleryButton } from './delete-gallery-button';
 import { env } from '@/lib/env';
 
 export default async function GalleryAdminPage({
@@ -49,7 +50,12 @@ export default async function GalleryAdminPage({
             )}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <DeleteGalleryButton
+            galleryId={gallery.id}
+            galleryTitle={gallery.title}
+            photoCount={photoList.length}
+          />
           <Link href={`/dashboard/galleries/${gallery.id}/favorites`} className="btn-ghost">
             Favourites
           </Link>

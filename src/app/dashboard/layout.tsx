@@ -1,6 +1,7 @@
 import { auth, signOut } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -24,6 +25,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <form action={logout}>
             <button type="submit" className="hover:text-accent">Sign out</button>
           </form>
+          <span className="h-4 w-px bg-line-2" aria-hidden />
+          <ThemeToggle />
         </nav>
       </header>
       <main className="mx-auto w-full max-w-7xl flex-1 px-5 py-10 sm:px-8 sm:py-14">{children}</main>

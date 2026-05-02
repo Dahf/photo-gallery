@@ -1,6 +1,7 @@
 import { signIn } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function LoginPage({
   searchParams,
@@ -26,7 +27,10 @@ export default function LoginPage({
           <div className="h-2.5 w-2.5 bg-accent" />
           <span className="text-sm font-semibold tracking-tight">Snapshot</span>
         </Link>
-        <span className="text-xs uppercase tracking-[0.12em] text-dim">Studio sign-in</span>
+        <div className="flex items-center gap-4">
+          <span className="text-xs uppercase tracking-[0.12em] text-dim">Studio sign-in</span>
+          <ThemeToggle />
+        </div>
       </header>
 
       <div className="flex flex-1 items-center justify-center px-5 py-12 sm:px-8">

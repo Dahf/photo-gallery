@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function HomePage() {
   return (
@@ -9,12 +10,15 @@ export default function HomePage() {
           <div className="h-3 w-3 bg-accent" />
           <span className="text-sm font-semibold tracking-tight">Snapshot</span>
         </div>
-        <Link
-          href="/login"
-          className="text-xs font-semibold uppercase tracking-[0.08em] text-muted hover:text-text"
-        >
-          Sign in
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/login"
+            className="text-xs font-semibold uppercase tracking-[0.08em] text-muted hover:text-text"
+          >
+            Sign in
+          </Link>
+          <ThemeToggle />
+        </div>
       </header>
 
       {/* Hero */}
