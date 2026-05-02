@@ -55,6 +55,11 @@ RUN npm install --omit=optional --no-save \
     && npm install --no-save --include=optional --os=linux --libc=musl --cpu=x64 sharp@0.34.5 \
     && chown -R nextjs:nodejs /app/node_modules
 
+# Migration entrypoint — runs drizzle-kit migrate before exec'ing the server.
+COPY --chown=nextjs:nodejs docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
 USER nextjs
 EXPOSE 3000
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["node", "server.js"]
