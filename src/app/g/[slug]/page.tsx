@@ -2,7 +2,7 @@ import { db } from '@/lib/db';
 import { galleries, photos, favorites, users } from '@/lib/db/schema';
 import { and, asc, eq, inArray } from 'drizzle-orm';
 import { notFound, redirect } from 'next/navigation';
-import { hasGalleryAccess, getOrSetClientSession } from '@/lib/gallery-auth';
+import { hasGalleryAccess, readClientSession } from '@/lib/gallery-auth';
 import { publicPhotoUrl } from '@/lib/s3';
 import { GalleryView } from './gallery-view';
 
@@ -44,8 +44,11 @@ export default async function PublicGalleryPage({
     .where(eq(photos.galleryId, gallery.id))
     .orderBy(asc(photos.sortOrder), asc(photos.createdAt));
 
-  const sessionId = await getOrSetClientSession();
-  const favRows = photoList.length
+  // Server Components can only READ cookies. The cookie itself is created on
+  // the first favourite POST (Route Handler). Until then, we just have no
+  // pre-marked favourites for this visitor — which is correct.
+  const sessionId = await readClientSession();
+  const favRows = sessionId && photoList.length
     ? await db
         .select({ photoId: favorites.photoId })
         .from(favorites)

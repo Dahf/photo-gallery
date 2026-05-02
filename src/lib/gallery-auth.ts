@@ -42,6 +42,15 @@ export async function hasGalleryAccess(slug: string, passwordHash: string | null
   return verifyGalleryToken(token, slug);
 }
 
+// Read-only — safe to call from Server Components (the public gallery page).
+// Returns null if the visitor has no client-session cookie yet.
+export async function readClientSession(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get(clientSessionCookie)?.value ?? null;
+}
+
+// Read-or-create — only safe in Server Actions or Route Handlers (mutating
+// cookies in a Server Component throws in Next.js 16).
 export async function getOrSetClientSession(): Promise<string> {
   const cookieStore = await cookies();
   const existing = cookieStore.get(clientSessionCookie)?.value;

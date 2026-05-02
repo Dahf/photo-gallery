@@ -6,6 +6,10 @@ FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
+# package-lock.json may have been generated on Windows (win32 prebuilds for
+# sharp). Force-install the linuxmusl-x64 native binary so sharp loads in
+# the Alpine runtime.
+RUN npm install --no-save --include=optional --os=linux --libc=musl --cpu=x64 sharp
 
 FROM base AS builder
 WORKDIR /app
