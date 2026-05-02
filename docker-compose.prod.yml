@@ -1,0 +1,91 @@
+services:
+  app:
+    build: .
+    image: snapshare:latest
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://snapshare:${POSTGRES_PASSWORD}@postgres:5432/snapshare
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_URL: ${APP_URL}
+      APP_URL: ${APP_URL}
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_ACCESS_KEY: ${MINIO_ROOT_USER}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      S3_BUCKET_ORIGINALS: originals
+      S3_BUCKET_PHOTOS: photos
+      PHOTOS_PUBLIC_BASE_URL: ${PHOTOS_PUBLIC_BASE_URL}
+    depends_on:
+      - postgres
+      - minio
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.snapshare-app.entrypoints=web,websecure
+      - traefik.http.services.snapshare-app.loadbalancer.server.port=3000
+      - traefik.http.routers.snapshare-app.rule=Host(`${APP_DOMAIN}`)
+      - traefik.http.routers.snapshare-app.tls=true
+      - traefik.docker.network=traefik_proxy-net
+      - traefik.http.middlewares.snapshare-app.headers.SSLRedirect=true
+      - traefik.http.middlewares.snapshare-app.headers.STSSeconds=315360000
+      - traefik.http.middlewares.snapshare-app.headers.browserXSSFilter=true
+      - traefik.http.middlewares.snapshare-app.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.snapshare-app.headers.forceSTSHeader=true
+      - traefik.http.middlewares.snapshare-app.headers.SSLHost=${APP_DOMAIN}
+      - traefik.http.middlewares.snapshare-app.headers.STSIncludeSubdomains=true
+      - traefik.http.middlewares.snapshare-app.headers.STSPreload=true
+      - traefik.http.routers.snapshare-app.middlewares=snapshare-app@docker
+    networks:
+      - default
+      - traefik_proxy-net
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: snapshare
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: snapshare
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - default
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
+    labels:
+      # Public photo bucket — Cloudflare proxies CDN_DOMAIN and caches /photos/*.
+      - traefik.enable=true
+      - traefik.http.routers.snapshare-cdn.entrypoints=web,websecure
+      - traefik.http.services.snapshare-cdn.loadbalancer.server.port=9000
+      - traefik.http.routers.snapshare-cdn.rule=Host(`${CDN_DOMAIN}`)
+      - traefik.http.routers.snapshare-cdn.tls=true
+      - traefik.docker.network=traefik_proxy-net
+      - traefik.http.middlewares.snapshare-cdn.headers.SSLRedirect=true
+      - traefik.http.middlewares.snapshare-cdn.headers.STSSeconds=315360000
+      - traefik.http.middlewares.snapshare-cdn.headers.browserXSSFilter=true
+      - traefik.http.middlewares.snapshare-cdn.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.snapshare-cdn.headers.forceSTSHeader=true
+      - traefik.http.middlewares.snapshare-cdn.headers.SSLHost=${CDN_DOMAIN}
+      - traefik.http.middlewares.snapshare-cdn.headers.STSIncludeSubdomains=true
+      - traefik.http.middlewares.snapshare-cdn.headers.STSPreload=true
+      - traefik.http.routers.snapshare-cdn.middlewares=snapshare-cdn@docker
+    networks:
+      - default
+      - traefik_proxy-net
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  default:
+  traefik_proxy-net:
+    external: true

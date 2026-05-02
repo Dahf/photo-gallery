@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: snapshare-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: snapshare
+      POSTGRES_PASSWORD: snapshare_dev
+      POSTGRES_DB: snapshare
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: snapshare-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: snapshare
+      MINIO_ROOT_PASSWORD: snapshare_dev_secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: snapshare-minio-init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 3;
+      mc alias set local http://minio:9000 snapshare snapshare_dev_secret;
+      mc mb -p local/originals || true;
+      mc mb -p local/photos || true;
+      mc anonymous set download local/photos || true;
+      exit 0;
+      "
+
+volumes:
+  postgres_data:
+  minio_data:
