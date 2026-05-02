@@ -3,9 +3,9 @@ import { db } from '@/lib/db';
 import { galleries, photos } from '@/lib/db/schema';
 import { and, asc, eq } from 'drizzle-orm';
 import { redirect, notFound } from 'next/navigation';
-import { publicPhotoUrl } from '@/lib/s3';
 import Link from 'next/link';
 import { UploadZone } from './upload-zone';
+import { PhotoGrid } from './photo-grid';
 import { env } from '@/lib/env';
 
 export default async function GalleryAdminPage({
@@ -73,22 +73,10 @@ export default async function GalleryAdminPage({
           <p className="display text-2xl text-muted">Drop photos above to upload.</p>
         </div>
       ) : (
-        <ul className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-          {photoList.map((p, idx) => (
-            <li key={p.id} className="cell aspect-square">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={publicPhotoUrl(p.s3KeyThumb)}
-                alt={p.filename}
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute bottom-1 right-1 tabular bg-bg/85 px-1 text-[10px] text-text">
-                {String(idx + 1).padStart(3, '0')}
-              </div>
-            </li>
-          ))}
-        </ul>
+        <PhotoGrid
+          photos={photoList.map((p) => ({ id: p.id, filename: p.filename, s3KeyThumb: p.s3KeyThumb }))}
+          photosBaseUrl={env.PHOTOS_PUBLIC_BASE_URL}
+        />
       )}
     </div>
   );
