@@ -4,6 +4,7 @@ import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { LogoUploader } from './logo-uploader';
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -17,8 +18,7 @@ export default async function SettingsPage() {
     if (!s?.user) redirect('/login');
     const name = String(formData.get('name') ?? '').trim() || null;
     const studioName = String(formData.get('studioName') ?? '').trim() || null;
-    const logoUrl = String(formData.get('logoUrl') ?? '').trim() || null;
-    await db.update(users).set({ name, studioName, logoUrl }).where(eq(users.id, s.user.id));
+    await db.update(users).set({ name, studioName }).where(eq(users.id, s.user.id));
     revalidatePath('/dashboard/settings');
   }
 
@@ -35,12 +35,15 @@ export default async function SettingsPage() {
       <form action={save} className="space-y-6 border border-line bg-surface p-8">
         <Field label="Your name" name="name" defaultValue={user?.name ?? ''} />
         <Field label="Studio name" name="studioName" defaultValue={user?.studioName ?? ''} placeholder="Shown on every gallery" />
-        <Field label="Logo URL" name="logoUrl" defaultValue={user?.logoUrl ?? ''} placeholder="https://…" />
         <button type="submit" className="btn-primary mt-2">
           Save settings
           <span aria-hidden>→</span>
         </button>
       </form>
+
+      <div className="border border-line bg-surface p-8">
+        <LogoUploader currentUrl={user?.logoUrl ?? null} />
+      </div>
     </div>
   );
 }
