@@ -15,9 +15,24 @@ const body = Albert_Sans({
   display: 'swap',
 });
 
+// Absolute base for og:image / twitter:image. Falls back to localhost in dev.
+const appUrl = process.env.APP_URL || 'http://localhost:3000';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(appUrl),
   title: 'Snapshot — photo galleries',
   description: 'Private photo galleries for clients.',
+  openGraph: {
+    title: 'Snapshot — photo galleries',
+    description: 'Private photo galleries for clients.',
+    type: 'website',
+    siteName: 'Snapshot',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Snapshot — photo galleries',
+    description: 'Private photo galleries for clients.',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
