@@ -17,7 +17,7 @@ const body = Albert_Sans({
 
 export const metadata: Metadata = {
   title: 'Snapshot — photo galleries',
-  description: 'Self-hosted photo galleries for clients.',
+  description: 'Private photo galleries for clients.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

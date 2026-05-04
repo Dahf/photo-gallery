@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { galleries } from '@/lib/db/schema';
+import { galleries, users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { notFound, redirect } from 'next/navigation';
 import { signGalleryToken, verifyPassword, galleryCookieName } from '@/lib/gallery-auth';
@@ -16,8 +16,15 @@ export default async function PasswordPage({
   const { error } = await searchParams;
 
   const [gallery] = await db
-    .select({ id: galleries.id, title: galleries.title, passwordHash: galleries.passwordHash })
+    .select({
+      id: galleries.id,
+      title: galleries.title,
+      passwordHash: galleries.passwordHash,
+      studioName: users.studioName,
+      logoUrl: users.logoUrl,
+    })
     .from(galleries)
+    .innerJoin(users, eq(users.id, galleries.userId))
     .where(eq(galleries.slug, slug))
     .limit(1);
 
@@ -44,9 +51,20 @@ export default async function PasswordPage({
   return (
     <main className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between border-b border-line px-5 py-3 sm:px-8">
-        <div className="flex items-center gap-3">
-          <div className="h-2.5 w-2.5 bg-accent" />
-          <span className="text-sm font-semibold tracking-tight">Snapshot</span>
+        <div className="flex items-center gap-3 min-w-0">
+          {gallery.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={gallery.logoUrl}
+              alt={gallery.studioName ?? 'Studio'}
+              className="h-7 w-7 shrink-0 object-cover"
+            />
+          ) : (
+            <div className="h-2.5 w-2.5 shrink-0 bg-accent" />
+          )}
+          <span className="truncate text-sm font-semibold tracking-tight">
+            {gallery.studioName ?? 'Studio'}
+          </span>
         </div>
         <span className="text-xs uppercase tracking-[0.12em] text-dim">Sealed gallery</span>
       </header>
@@ -96,9 +114,9 @@ export default async function PasswordPage({
       </div>
 
       <footer className="border-t border-line px-5 py-4 sm:px-8">
-        <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-dim">
-          <span>Snapshot · self-hosted</span>
-          <span>silasbeckmann.de</span>
+        <div className="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.12em] text-dim">
+          <span className="truncate">{gallery.studioName ?? 'Studio'}</span>
+          <span className="shrink-0">Private gallery</span>
         </div>
       </footer>
     </main>

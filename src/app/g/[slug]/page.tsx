@@ -91,9 +91,18 @@ export default async function PublicGalleryPage({
       {/* Sticky top bar — pro-tool chrome */}
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-bg/95 px-5 py-3 backdrop-blur sm:px-8">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="h-2.5 w-2.5 shrink-0 bg-accent" />
+          {gallery.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={gallery.logoUrl}
+              alt={gallery.studioName ?? 'Studio'}
+              className="h-7 w-7 shrink-0 object-cover"
+            />
+          ) : (
+            <div className="h-2.5 w-2.5 shrink-0 bg-accent" />
+          )}
           <span className="truncate text-sm font-semibold tracking-tight">
-            {gallery.studioName ?? 'Snapshot'}
+            {gallery.studioName ?? 'Studio'}
           </span>
           <span className="hidden text-xs uppercase tracking-[0.12em] text-dim sm:inline">·</span>
           <span className="hidden truncate text-xs uppercase tracking-[0.12em] text-muted sm:inline">
@@ -210,9 +219,19 @@ export default async function PublicGalleryPage({
       </section>
 
       <footer className="border-t border-line px-5 py-5 sm:px-8">
-        <div className="mx-auto flex max-w-7xl items-center justify-between text-[11px] uppercase tracking-[0.12em] text-dim">
-          <span>{gallery.studioName ?? 'Snapshot'}</span>
-          <span>End — {String(items.length).padStart(3, '0')} photos</span>
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 text-[11px] uppercase tracking-[0.12em] text-dim">
+          <div className="flex items-center gap-2 min-w-0">
+            {gallery.logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={gallery.logoUrl}
+                alt={gallery.studioName ?? 'Studio'}
+                className="h-5 w-5 shrink-0 object-cover"
+              />
+            )}
+            <span className="truncate">{gallery.studioName ?? 'Studio'}</span>
+          </div>
+          <span className="shrink-0">End — {String(items.length).padStart(3, '0')} photos</span>
         </div>
       </footer>
     </div>

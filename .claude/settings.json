@@ -12,7 +12,8 @@
       "PowerShell(npm run db:generate)",
       "PowerShell(npm run db:push)",
       "PowerShell(npm run db:migrate)",
-      "PowerShell(npx tsc --noEmit)"
+      "PowerShell(npx tsc --noEmit)",
+      "Bash(ls c:\\\\\\\\Users\\\\\\\\silas\\\\\\\\projects\\\\\\\\photo-gallery\\\\\\\\public)"
     ]
   }
 }
