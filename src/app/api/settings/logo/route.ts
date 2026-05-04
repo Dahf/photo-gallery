@@ -3,8 +3,7 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { buckets, putObject, publicPhotoUrl } from '@/lib/s3';
-import { nanoid } from 'nanoid';
+import { buckets, putObject } from '@/lib/s3';
 
 export const runtime = 'nodejs';
 
@@ -27,19 +26,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Max 5 MB.' }, { status: 400 });
   }
 
-  const extByMime: Record<string, string> = {
-    'image/png': '.png',
-    'image/jpeg': '.jpg',
-    'image/webp': '.webp',
-    'image/svg+xml': '.svg',
-  };
-  const ext = extByMime[file.type] ?? '';
-  const key = `branding/${session.user.id}/logo-${nanoid(10)}${ext}`;
+  // Deterministic key — overwrites the previous logo, content-type is stored on
+  // the object so the proxy route can serve it back with the right MIME.
+  const key = `branding/${session.user.id}/logo`;
 
   const buf = Buffer.from(await file.arrayBuffer());
   await putObject(buckets.photos, key, buf, file.type);
 
-  const url = publicPhotoUrl(key);
+  // Cache-busting query param so the browser picks up the new image immediately.
+  const url = `/api/u/${session.user.id}/logo?v=${Date.now()}`;
   await db.update(users).set({ logoUrl: url }).where(eq(users.id, session.user.id));
 
   return NextResponse.json({ url });
