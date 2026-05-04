@@ -16,7 +16,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-bg/95 px-5 py-3 backdrop-blur sm:px-8">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="h-2.5 w-2.5 bg-accent" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="Snapshot" className="h-6 w-6" />
           <span className="text-sm font-semibold tracking-tight">Snapshot Studio</span>
         </Link>
         <nav className="flex items-center gap-5 text-xs font-semibold uppercase tracking-[0.08em] text-muted">

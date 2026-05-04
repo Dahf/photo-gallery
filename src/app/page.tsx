@@ -7,7 +7,8 @@ export default function HomePage() {
       {/* Top bar */}
       <header className="flex items-center justify-between border-b border-line px-6 py-4 sm:px-8">
         <div className="flex items-center gap-3">
-          <div className="h-3 w-3 bg-accent" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="Snapshot" className="h-6 w-6" />
           <span className="text-sm font-semibold tracking-tight">Snapshot</span>
         </div>
         <div className="flex items-center gap-4">
