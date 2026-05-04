@@ -9,6 +9,7 @@ export type EventType =
   | 'favorite_add'
   | 'favorite_remove'
   | 'hero_play'
+  | 'hero_download'
   | 'gallery_open';
 
 type RecordArgs = {

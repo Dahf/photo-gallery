@@ -76,7 +76,13 @@ export default async function GalleryAdminPage({
         <code className="mt-2 block break-all text-sm text-text">{shareUrl}</code>
       </div>
 
-      <HeroVideoUpload gallerySlug={gallery.slug} hasVideo={!!gallery.heroVideoKey} />
+      <HeroVideoUpload
+        gallerySlug={gallery.slug}
+        hasVideo={!!gallery.heroVideoKey}
+        hasOriginal={!!gallery.heroVideoOriginalKey}
+        originalSizeBytes={gallery.heroVideoOriginalSizeBytes}
+        downloadEnabled={gallery.downloadEnabled}
+      />
 
       <UploadZone galleryId={gallery.id} />
 

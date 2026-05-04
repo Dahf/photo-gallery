@@ -27,6 +27,8 @@ export default async function PublicGalleryPage({
       createdAt: galleries.createdAt,
       heroVideoKey: galleries.heroVideoKey,
       heroVideoMime: galleries.heroVideoMime,
+      heroVideoOriginalKey: galleries.heroVideoOriginalKey,
+      heroVideoOriginalSizeBytes: galleries.heroVideoOriginalSizeBytes,
       studioName: users.studioName,
       logoUrl: users.logoUrl,
     })
@@ -147,22 +149,44 @@ export default async function PublicGalleryPage({
       </section>
 
       {/* Hero video — full-bleed dark band, plays above the photo grid */}
-      {gallery.heroVideoKey && (
+      {(gallery.heroVideoKey || gallery.heroVideoOriginalKey) && (
         <section className="border-b border-line bg-bg">
           <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
-            <div className="fade-up flex items-center gap-3 pb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
-              <span className="h-px w-8 bg-accent" />
-              <span>Hero film</span>
+            <div className="fade-up flex flex-wrap items-center justify-between gap-3 pb-4">
+              <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
+                <span className="h-px w-8 bg-accent" />
+                <span>Hero film</span>
+              </div>
+              {gallery.heroVideoOriginalKey && gallery.downloadEnabled && (
+                <a
+                  href={`/api/g/${gallery.slug}/video/original/download`}
+                  className="inline-flex items-center gap-2 border border-line-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-text transition hover:border-accent hover:text-accent"
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 4v12M6 12l6 6 6-6M4 20h16" strokeLinecap="square" />
+                  </svg>
+                  <span>Download film</span>
+                  {gallery.heroVideoOriginalSizeBytes != null && (
+                    <span className="tabular text-dim">
+                      {gallery.heroVideoOriginalSizeBytes >= 1024 * 1024 * 1024
+                        ? `${(gallery.heroVideoOriginalSizeBytes / 1024 / 1024 / 1024).toFixed(1)} GB`
+                        : `${Math.round(gallery.heroVideoOriginalSizeBytes / 1024 / 1024)} MB`}
+                    </span>
+                  )}
+                </a>
+              )}
             </div>
-            <div className="fade-up fade-up-1 overflow-hidden bg-black">
-              <video
-                src={`/api/g/${gallery.slug}/video`}
-                controls
-                playsInline
-                preload="metadata"
-                className="h-auto w-full"
-              />
-            </div>
+            {gallery.heroVideoKey && (
+              <div className="fade-up fade-up-1 overflow-hidden bg-black">
+                <video
+                  src={`/api/g/${gallery.slug}/video`}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="h-auto w-full"
+                />
+              </div>
+            )}
           </div>
         </section>
       )}

@@ -40,6 +40,9 @@ export const galleries = pgTable(
     heroVideoKey: text('hero_video_key'),
     heroVideoMime: text('hero_video_mime'),
     heroVideoSizeBytes: integer('hero_video_size_bytes'),
+    heroVideoOriginalKey: text('hero_video_original_key'),
+    heroVideoOriginalMime: text('hero_video_original_mime'),
+    heroVideoOriginalSizeBytes: integer('hero_video_original_size_bytes'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [uniqueIndex('galleries_slug_idx').on(t.slug)]

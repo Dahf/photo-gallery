@@ -12,7 +12,12 @@ export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ id: str
   const { id } = await ctx.params;
 
   const [gallery] = await db
-    .select({ id: galleries.id, userId: galleries.userId })
+    .select({
+      id: galleries.id,
+      userId: galleries.userId,
+      heroVideoKey: galleries.heroVideoKey,
+      heroVideoOriginalKey: galleries.heroVideoOriginalKey,
+    })
     .from(galleries)
     .where(eq(galleries.id, id))
     .limit(1);
@@ -35,13 +40,17 @@ export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ id: str
   await db.delete(galleries).where(and(eq(galleries.id, gallery.id), eq(galleries.userId, session.user.id)));
 
   // Best-effort S3 cleanup. Failures don't undo the DB delete.
-  await Promise.allSettled(
-    photoRows.flatMap((p) => [
+  await Promise.allSettled([
+    ...photoRows.flatMap((p) => [
       deleteObject(buckets.originals, p.s3KeyOriginal),
       deleteObject(buckets.photos, p.s3KeyWeb),
       deleteObject(buckets.photos, p.s3KeyThumb),
-    ])
-  );
+    ]),
+    ...(gallery.heroVideoKey ? [deleteObject(buckets.originals, gallery.heroVideoKey)] : []),
+    ...(gallery.heroVideoOriginalKey
+      ? [deleteObject(buckets.originals, gallery.heroVideoOriginalKey)]
+      : []),
+  ]);
 
   return NextResponse.json({ ok: true });
 }
