@@ -16,7 +16,9 @@ const body = Albert_Sans({
 });
 
 // Absolute base for og:image / twitter:image. Falls back to localhost in dev.
-const appUrl = process.env.APP_URL || 'http://localhost:3000';
+// Tolerates APP_URL set without a scheme (e.g. "snapshare.example.com").
+const rawAppUrl = process.env.APP_URL || 'http://localhost:3000';
+const appUrl = /^https?:\/\//.test(rawAppUrl) ? rawAppUrl : `https://${rawAppUrl}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
