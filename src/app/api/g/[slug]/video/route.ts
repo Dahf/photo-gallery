@@ -4,14 +4,16 @@ import { galleries } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { hasGalleryAccess, getOrSetClientSession } from '@/lib/gallery-auth';
 import { auth } from '@/lib/auth';
-import { buckets, getRangedObject, deleteObject } from '@/lib/s3';
+import { buckets, presignGet, deleteObject } from '@/lib/s3';
 import { recordEvent } from '@/lib/analytics';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-// Stream the hero video with HTTP Range support so the browser can seek.
-export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
+// Auth-gate the hero video, then redirect to a presigned S3 URL. The browser
+// streams directly from S3 (with native Range support) — Cloudflare and our
+// Node runtime stay out of the byte path.
+export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   const { slug } = await ctx.params;
 
   const [gallery] = await db
@@ -21,7 +23,6 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
       passwordHash: galleries.passwordHash,
       expiresAt: galleries.expiresAt,
       heroVideoKey: galleries.heroVideoKey,
-      heroVideoMime: galleries.heroVideoMime,
     })
     .from(galleries)
     .where(eq(galleries.slug, slug))
@@ -39,30 +40,14 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   }
   if (!allowed) return new Response('Forbidden', { status: 403 });
 
-  const range = req.headers.get('range') ?? undefined;
+  const sessionId = await getOrSetClientSession();
+  await recordEvent({ galleryId: gallery.id, eventType: 'hero_play', sessionId });
 
-  // Track only the initial open (no Range, or Range starts at byte 0). Subsequent
-  // seeks emit further Range requests we want to ignore. Awaited because this is a
-  // streamed response and an unawaited insert can be cancelled mid-flight.
-  if (!range || /^bytes=0-/.test(range)) {
-    const sessionId = await getOrSetClientSession();
-    await recordEvent({ galleryId: gallery.id, eventType: 'hero_play', sessionId });
-  }
-
-  const res = await getRangedObject(buckets.originals, gallery.heroVideoKey, range);
-
-  const headers = new Headers({
-    'Content-Type': res.ContentType ?? gallery.heroVideoMime ?? 'video/mp4',
-    'Accept-Ranges': 'bytes',
-    'Cache-Control': 'private, max-age=3600',
-  });
-  if (res.ContentLength != null) headers.set('Content-Length', String(res.ContentLength));
-  if (res.ContentRange) headers.set('Content-Range', res.ContentRange);
-
-  return new Response(res.Body as unknown as ReadableStream, {
-    status: range ? 206 : 200,
-    headers,
-  });
+  // Redirect to a presigned S3 URL so the browser fetches the video directly,
+  // bypassing Cloudflare's 100 MB per-request body cap and our Node proxy.
+  // S3 handles Range requests natively, so seeking just works.
+  const url = await presignGet(buckets.originals, gallery.heroVideoKey, 3600);
+  return Response.redirect(url, 302);
 }
 
 // Admin-only: remove the hero video.

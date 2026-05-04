@@ -4,7 +4,7 @@ import { galleries } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { hasGalleryAccess, getOrSetClientSession } from '@/lib/gallery-auth';
 import { auth } from '@/lib/auth';
-import { buckets, getObjectStream } from '@/lib/s3';
+import { buckets, presignGet } from '@/lib/s3';
 import { recordEvent } from '@/lib/analytics';
 
 export const runtime = 'nodejs';
@@ -45,9 +45,6 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: stri
     }
   }
 
-  const body = await getObjectStream(buckets.originals, gallery.key);
-  if (!body) return new Response('Not found', { status: 404 });
-
   const sessionId = await getOrSetClientSession();
   await recordEvent({ galleryId: gallery.id, eventType: 'hero_download', sessionId });
 
@@ -55,10 +52,11 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: stri
   const ext = gallery.key.includes('.') ? gallery.key.slice(gallery.key.lastIndexOf('.')) : '';
   const filename = `hero-video${ext}`;
 
-  return new Response(body as unknown as ReadableStream, {
-    headers: {
-      'Content-Type': gallery.mime ?? 'application/octet-stream',
-      'Content-Disposition': `attachment; filename="${filename}"`,
-    },
+  // Redirect to a presigned URL so the browser downloads directly from S3,
+  // avoiding Cloudflare's per-request body cap on large originals.
+  const url = await presignGet(buckets.originals, gallery.key, 3600, {
+    responseContentDisposition: `attachment; filename="${filename}"`,
+    responseContentType: gallery.mime ?? 'application/octet-stream',
   });
+  return Response.redirect(url, 302);
 }

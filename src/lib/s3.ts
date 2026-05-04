@@ -70,6 +70,29 @@ export async function getRangedObject(bucket: string, key: string, range?: strin
   );
 }
 
+// Presigned GET — used to redirect the browser straight to S3 for large objects
+// (videos), bypassing Cloudflare's per-request body cap and our Node proxy.
+// `responseContentDisposition` lets us force a download filename without proxying.
+export async function presignGet(
+  bucket: string,
+  key: string,
+  expiresInSeconds = 3600,
+  opts: { responseContentDisposition?: string; responseContentType?: string } = {}
+) {
+  return getSignedUrl(
+    publicClient(),
+    new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      ...(opts.responseContentDisposition
+        ? { ResponseContentDisposition: opts.responseContentDisposition }
+        : {}),
+      ...(opts.responseContentType ? { ResponseContentType: opts.responseContentType } : {}),
+    }),
+    { expiresIn: expiresInSeconds }
+  );
+}
+
 export async function getObjectBuffer(bucket: string, key: string): Promise<Buffer> {
   const body = await getObjectStream(bucket, key);
   if (!body) throw new Error(`Empty object: ${bucket}/${key}`);
